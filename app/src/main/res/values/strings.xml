@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Induztek</string>
+    <string name="inicio_card_title">Trabajo en terreno</string>
+    <string name="inicio_card_description">Registro de visitas técnicas y protocolos de pruebas de equipos eléctricos</string>
 </resources>
