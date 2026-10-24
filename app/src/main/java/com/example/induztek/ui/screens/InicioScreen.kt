@@ -23,7 +23,10 @@ import com.example.induztek.ui.theme.InduztekTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InicioScreen(modifier: Modifier = Modifier) {
+fun InicioScreen(
+    onNavigateToVisitas: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -45,6 +48,7 @@ fun InicioScreen(modifier: Modifier = Modifier) {
                 .padding(16.dp)
         ) {
             Card(
+                onClick = onNavigateToVisitas,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
