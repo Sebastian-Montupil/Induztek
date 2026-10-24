@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.induztek.ui.screens.InicioScreen
+import com.example.induztek.ui.navigation.AppNavigation
 import com.example.induztek.ui.theme.InduztekTheme
 
 class MainActivity : ComponentActivity() {
@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             InduztekTheme {
-                InicioScreen()
+                AppNavigation()
             }
         }
     }
