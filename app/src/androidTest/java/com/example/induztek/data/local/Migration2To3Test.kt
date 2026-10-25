@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.induztek.data.local.entity.InstrumentoEntity
 import com.example.induztek.data.local.migrations.MIGRATION_2_3
+import com.example.induztek.data.local.migrations.MIGRATION_3_4
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -20,8 +21,8 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class Migration2To3Test {
 
-    private val dbNameA = "test_migration_v2_v3_success.db"
-    private val dbNameB = "test_migration_v2_v3_fail.db"
+    private val dbNameA = "test_migration_v2_v4_success.db"
+    private val dbNameB = "test_migration_v2_v4_fail.db"
     private lateinit var context: Context
 
     @Before
@@ -87,7 +88,7 @@ class Migration2To3Test {
                 AppDatabase::class.java,
                 dbNameA,
             )
-                .addMigrations(MIGRATION_2_3)
+                .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
                 .build()
 
             try {
@@ -172,7 +173,7 @@ class Migration2To3Test {
                     AppDatabase::class.java,
                     dbNameB,
                 )
-                    .addMigrations(MIGRATION_2_3)
+                    .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
                     .build()
                 try {
                     failedDb.openHelper.writableDatabase
