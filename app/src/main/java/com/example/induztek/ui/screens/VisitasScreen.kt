@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +29,7 @@ import com.example.induztek.ui.theme.InduztekTheme
 @Composable
 fun VisitasScreen(
     onBackClick: () -> Unit,
+    onNavigateToNuevaVisita: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -77,12 +77,8 @@ fun VisitasScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { /* Pendiente para etapa de formulario */ },
-                enabled = false,
-                colors = ButtonDefaults.buttonColors(
-                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
+                onClick = onNavigateToNuevaVisita,
+                enabled = true,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = stringResource(id = R.string.visitas_btn_nueva_visita))
