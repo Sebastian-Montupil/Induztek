@@ -12,6 +12,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
@@ -57,9 +65,9 @@ fun RegistroEquipoScreen(
     )
     val uiState by equipoViewModel.uiState.collectAsStateWithLifecycle()
 
-    var expandedCliente by remember { mutableStateOf(false) }
-    var expandedInstalacion by remember { mutableStateOf(false) }
-    var expandedTipo by remember { mutableStateOf(false) }
+    var expandedCliente by remember { mutableStateOf(value = false) }
+    var expandedInstalacion by remember { mutableStateOf(value = false) }
+    var expandedTipo by remember { mutableStateOf(value = false) }
 
     val tiposList = listOf(
         "Interruptor",
@@ -129,7 +137,22 @@ fun RegistroEquipoScreen(
                     readOnly = true,
                     label = { Text("Cliente *") },
                     placeholder = { Text("Seleccione un cliente") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCliente) },
+                    isError = uiState.clienteError,
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.Person, contentDescription = null)
+                    },
+                    supportingText = {
+                        if (uiState.clienteError) {
+                            Text(text = "Debe seleccionar un cliente válido")
+                        }
+                    },
+                    trailingIcon = {
+                        if (uiState.clienteError) {
+                            Icon(imageVector = Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                        } else {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCliente)
+                        }
+                    },
                     modifier = Modifier
                         .menuAnchor(
                             type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
@@ -156,7 +179,7 @@ fun RegistroEquipoScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             val instalacionesDisponibles = CatalogoClientes.getInstalacionesPorCliente(uiState.clienteSeleccionadoId)
-            val instalacionHabilitada = uiState.clienteSeleccionadoId != null && instalacionesDisponibles.isNotEmpty()
+            val instalacionHabilitada = ((uiState.clienteSeleccionadoId != null) && instalacionesDisponibles.isNotEmpty())
             val instalacionSeleccionada = instalacionesDisponibles.find { it.id == uiState.instalacionSeleccionadaId }
 
             ExposedDropdownMenuBox(
@@ -175,8 +198,19 @@ fun RegistroEquipoScreen(
                     enabled = instalacionHabilitada,
                     label = { Text("Instalación *") },
                     placeholder = { Text("Seleccione una instalación") },
+                    isError = uiState.instalacionError,
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.Place, contentDescription = null)
+                    },
+                    supportingText = {
+                        if (uiState.instalacionError) {
+                            Text(text = "Debe seleccionar una instalación válida")
+                        }
+                    },
                     trailingIcon = {
-                        if (instalacionHabilitada) {
+                        if (uiState.instalacionError) {
+                            Icon(imageVector = Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                        } else if (instalacionHabilitada) {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedInstalacion)
                         }
                     },
@@ -209,6 +243,15 @@ fun RegistroEquipoScreen(
                 value = uiState.nombre,
                 onValueChange = { equipoViewModel.onNombreCambia(it) },
                 label = { Text("Nombre del equipo *") },
+                isError = uiState.nombreError,
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Build, contentDescription = null)
+                },
+                supportingText = {
+                    if (uiState.nombreError) {
+                        Text(text = "El nombre del equipo es obligatorio")
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
@@ -225,7 +268,22 @@ fun RegistroEquipoScreen(
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Tipo de equipo *") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTipo) },
+                    isError = uiState.tipoError,
+                    leadingIcon = {
+                        Icon(imageVector = Icons.AutoMirrored.Filled.List, contentDescription = null)
+                    },
+                    supportingText = {
+                        if (uiState.tipoError) {
+                            Text(text = "Debe seleccionar un tipo de equipo")
+                        }
+                    },
+                    trailingIcon = {
+                        if (uiState.tipoError) {
+                            Icon(imageVector = Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                        } else {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTipo)
+                        }
+                    },
                     modifier = Modifier
                         .menuAnchor(
                             type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
@@ -255,6 +313,15 @@ fun RegistroEquipoScreen(
                 value = uiState.marca,
                 onValueChange = { equipoViewModel.onMarcaCambia(it) },
                 label = { Text("Marca *") },
+                isError = uiState.marcaError,
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Star, contentDescription = null)
+                },
+                supportingText = {
+                    if (uiState.marcaError) {
+                        Text(text = "La marca es obligatoria")
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
@@ -265,6 +332,9 @@ fun RegistroEquipoScreen(
                 value = uiState.modelo,
                 onValueChange = { equipoViewModel.onModeloCambia(it) },
                 label = { Text("Modelo (opcional)") },
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Create, contentDescription = null)
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
@@ -275,6 +345,15 @@ fun RegistroEquipoScreen(
                 value = uiState.numeroSerie,
                 onValueChange = { equipoViewModel.onNumeroSerieCambia(it) },
                 label = { Text("Número de serie *") },
+                isError = uiState.numeroSerieError,
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Info, contentDescription = null)
+                },
+                supportingText = {
+                    if (uiState.numeroSerieError) {
+                        Text(text = "El número de serie es obligatorio")
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
@@ -285,6 +364,9 @@ fun RegistroEquipoScreen(
                 value = uiState.codigoInterno,
                 onValueChange = { equipoViewModel.onCodigoInternoCambia(it) },
                 label = { Text("Código interno (opcional)") },
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Info, contentDescription = null)
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
@@ -295,6 +377,9 @@ fun RegistroEquipoScreen(
                 value = uiState.observaciones,
                 onValueChange = { equipoViewModel.onObservacionesCambia(it) },
                 label = { Text("Observaciones (opcional)") },
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Create, contentDescription = null)
+                },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3,
             )

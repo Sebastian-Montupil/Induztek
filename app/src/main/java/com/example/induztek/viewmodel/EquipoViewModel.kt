@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.induztek.data.local.entity.EquipoEntity
 import com.example.induztek.data.repository.EquipoRepository
+import com.example.induztek.domain.validation.ValidadorEquipo
 import com.example.induztek.model.CatalogoClientes
 import com.example.induztek.model.EquipoUiState
 import kotlinx.coroutines.CancellationException
@@ -31,6 +32,8 @@ class EquipoViewModel(
                 clienteSeleccionadoId = clienteId,
                 instalacionSeleccionadaId = null,
                 equipos = emptyList(),
+                clienteError = false,
+                instalacionError = false,
                 mensajeError = null,
                 mensajeExito = null,
             )
@@ -49,6 +52,7 @@ class EquipoViewModel(
             currentState.copy(
                 instalacionSeleccionadaId = if (esValida) instalacionId else null,
                 equipos = emptyList(),
+                instalacionError = false,
                 mensajeError = null,
                 mensajeExito = null,
             )
@@ -79,15 +83,30 @@ class EquipoViewModel(
     }
 
     fun onNombreCambia(nombre: String) {
-        _uiState.update { it.copy(nombre = nombre) }
+        _uiState.update {
+            it.copy(
+                nombre = nombre,
+                nombreError = if (nombre.isNotBlank()) false else it.nombreError,
+            )
+        }
     }
 
     fun onTipoCambia(tipo: String) {
-        _uiState.update { it.copy(tipo = tipo) }
+        _uiState.update {
+            it.copy(
+                tipo = tipo,
+                tipoError = if (tipo.isNotBlank()) false else it.tipoError,
+            )
+        }
     }
 
     fun onMarcaCambia(marca: String) {
-        _uiState.update { it.copy(marca = marca) }
+        _uiState.update {
+            it.copy(
+                marca = marca,
+                marcaError = if (marca.isNotBlank()) false else it.marcaError,
+            )
+        }
     }
 
     fun onModeloCambia(modelo: String) {
@@ -95,7 +114,12 @@ class EquipoViewModel(
     }
 
     fun onNumeroSerieCambia(numeroSerie: String) {
-        _uiState.update { it.copy(numeroSerie = numeroSerie) }
+        _uiState.update {
+            it.copy(
+                numeroSerie = numeroSerie,
+                numeroSerieError = if (numeroSerie.isNotBlank()) false else it.numeroSerieError,
+            )
+        }
     }
 
     fun onCodigoInternoCambia(codigoInterno: String) {
@@ -112,10 +136,17 @@ class EquipoViewModel(
             return
         }
 
-        if (currentState.clienteSeleccionadoId.isNullOrBlank() || currentState.instalacionSeleccionadaId.isNullOrBlank()) {
+        val resultadoValidacion = ValidadorEquipo.validar(currentState)
+        if (!resultadoValidacion.esValido) {
             _uiState.update {
                 it.copy(
-                    mensajeError = "Debe seleccionar un cliente y una instalación.",
+                    clienteError = resultadoValidacion.clienteError,
+                    instalacionError = resultadoValidacion.instalacionError,
+                    nombreError = resultadoValidacion.nombreError,
+                    tipoError = resultadoValidacion.tipoError,
+                    marcaError = resultadoValidacion.marcaError,
+                    numeroSerieError = resultadoValidacion.numeroSerieError,
+                    mensajeError = "Por favor complete los campos obligatorios correctamente.",
                     mensajeExito = null,
                 )
             }
@@ -125,6 +156,12 @@ class EquipoViewModel(
         _uiState.update {
             it.copy(
                 guardando = true,
+                clienteError = false,
+                instalacionError = false,
+                nombreError = false,
+                tipoError = false,
+                marcaError = false,
+                numeroSerieError = false,
                 mensajeError = null,
                 mensajeExito = null,
             )
@@ -133,8 +170,8 @@ class EquipoViewModel(
         viewModelScope.launch {
             try {
                 val equipo = EquipoEntity(
-                    clienteId = currentState.clienteSeleccionadoId,
-                    instalacionId = currentState.instalacionSeleccionadaId,
+                    clienteId = currentState.clienteSeleccionadoId ?: "",
+                    instalacionId = currentState.instalacionSeleccionadaId ?: "",
                     nombre = currentState.nombre,
                     tipo = currentState.tipo,
                     marca = currentState.marca,

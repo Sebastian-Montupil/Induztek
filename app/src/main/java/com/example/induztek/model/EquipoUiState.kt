@@ -16,4 +16,10 @@ data class EquipoUiState(
     val guardando: Boolean = false,
     val mensajeError: String? = null,
     val mensajeExito: String? = null,
+    val clienteError: Boolean = false,
+    val instalacionError: Boolean = false,
+    val nombreError: Boolean = false,
+    val tipoError: Boolean = false,
+    val marcaError: Boolean = false,
+    val numeroSerieError: Boolean = false,
 )
