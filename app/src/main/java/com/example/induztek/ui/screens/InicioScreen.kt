@@ -25,6 +25,7 @@ import com.example.induztek.ui.theme.InduztekTheme
 @Composable
 fun InicioScreen(
     onNavigateToVisitas: () -> Unit = {},
+    onNavigateToEquipos: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -62,6 +63,29 @@ fun InicioScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = stringResource(id = R.string.inicio_card_description),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Card(
+                onClick = onNavigateToEquipos,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.inicio_equipos_card_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(id = R.string.inicio_equipos_card_description),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
