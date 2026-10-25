@@ -1,6 +1,7 @@
 package com.example.induztek.viewmodel
 
 import androidx.lifecycle.ViewModel
+import com.example.induztek.domain.validation.ValidadorNuevaVisita
 import com.example.induztek.model.CatalogoClientes
 import com.example.induztek.model.NuevaVisitaUiState
 import com.example.induztek.model.TipoVisita
@@ -93,28 +94,16 @@ class NuevaVisitaViewModel : ViewModel() {
     }
 
     fun validarDatos() {
-        val currentState = _uiState.value
-        val isClienteValid = currentState.clienteSeleccionadoId != null
-        val isInstalacionValid = currentState.instalacionSeleccionadaId != null &&
-                CatalogoClientes.getInstalacionesPorCliente(currentState.clienteSeleccionadoId)
-                    .any { it.id == currentState.instalacionSeleccionadaId }
-        val isFechaValid = currentState.fechaSelectedMillis != null
-        val isNumeroOtValid = currentState.numeroOt.trim().isNotEmpty()
-        val isTipoVisitaValid = currentState.tipoVisita != null
-        val isIngenieroValid = currentState.ingenieroCargoId != null
-
-        val isValid = isClienteValid && isInstalacionValid && isFechaValid &&
-                isNumeroOtValid && isTipoVisitaValid && isIngenieroValid
-
+        val resultado = ValidadorNuevaVisita.validar(_uiState.value)
         _uiState.update { state ->
             state.copy(
-                clienteError = !isClienteValid,
-                instalacionError = !isInstalacionValid,
-                fechaError = !isFechaValid,
-                numeroOtError = !isNumeroOtValid,
-                tipoVisitaError = !isTipoVisitaValid,
-                ingenieroError = !isIngenieroValid,
-                showValidDialog = isValid
+                clienteError = resultado.clienteError,
+                instalacionError = resultado.instalacionError,
+                fechaError = resultado.fechaError,
+                numeroOtError = resultado.numeroOtError,
+                tipoVisitaError = resultado.tipoVisitaError,
+                ingenieroError = resultado.ingenieroError,
+                showValidDialog = resultado.esValido
             )
         }
     }
