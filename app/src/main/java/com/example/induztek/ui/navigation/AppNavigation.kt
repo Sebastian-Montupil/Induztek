@@ -6,12 +6,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.induztek.data.repository.SesionRepository
 import com.example.induztek.ui.screens.EquiposScreen
+import com.example.induztek.ui.screens.IngresoScreen
 import com.example.induztek.ui.screens.InicioScreen
 import com.example.induztek.ui.screens.NuevaVisitaScreen
 import com.example.induztek.ui.screens.VisitasScreen
 
 object Screen {
+    const val INGRESO = "ingreso"
     const val INICIO = "inicio"
     const val VISITAS = "visitas"
     const val NUEVA_VISITA = "nueva_visita"
@@ -25,9 +28,21 @@ fun AppNavigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.INICIO,
+        startDestination = Screen.INGRESO,
         modifier = modifier
     ) {
+        composable(Screen.INGRESO) {
+            IngresoScreen(
+                onIngresoExitoso = {
+                    navController.navigate(Screen.INICIO) {
+                        popUpTo(Screen.INGRESO) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
         composable(Screen.INICIO) {
             InicioScreen(
                 onNavigateToVisitas = {
@@ -35,6 +50,15 @@ fun AppNavigation(
                 },
                 onNavigateToEquipos = {
                     navController.navigate(Screen.EQUIPOS)
+                },
+                onCerrarSesion = {
+                    SesionRepository.cerrarSesion()
+                    navController.navigate(Screen.INGRESO) {
+                        popUpTo(Screen.INICIO) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                 }
             )
         }
