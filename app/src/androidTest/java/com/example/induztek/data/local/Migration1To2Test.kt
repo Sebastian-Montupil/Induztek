@@ -8,6 +8,7 @@ import com.example.induztek.data.local.entity.CalibracionEntity
 import com.example.induztek.data.local.migrations.MIGRATION_1_2
 import com.example.induztek.data.local.migrations.MIGRATION_2_3
 import com.example.induztek.data.local.migrations.MIGRATION_3_4
+import com.example.induztek.data.local.migrations.MIGRATION_4_5
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -57,13 +58,13 @@ class Migration1To2Test {
                         `fechaVencimientoCalibracion` TEXT,
                         `observaciones` TEXT NOT NULL
                     )
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
                 sqliteDb.execSQL(
                     """
                     INSERT INTO instrumentos_medicion (nombre, tipoInstrumento, marca, modelo, numeroSerie, codigoInterno, fechaVencimientoCalibracion, observaciones)
                     VALUES ('Multímetro Digital', 'Instrumento', 'Fluke', '87V', 'SN98765', 'INS-001', '2025-12-31', 'Ninguna')
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
             } finally {
                 sqliteDb.close()
@@ -72,9 +73,9 @@ class Migration1To2Test {
             db = Room.databaseBuilder(
                 context,
                 AppDatabase::class.java,
-                dbName,
+                dbName
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build()
 
             val instrumentos = db.instrumentoDao().obtenerInstrumentos().first()
@@ -87,7 +88,7 @@ class Migration1To2Test {
             val calibracion = CalibracionEntity(
                 instrumentoId = instrumento.id,
                 fechaCalibracion = "2024-01-15",
-                fechaVencimiento = "2025-01-15",
+                fechaVencimiento = "2025-01-15"
             )
             val calibracionId = db.calibracionDao().insertarCalibracion(calibracion)
             assertTrue(calibracionId > 0)
