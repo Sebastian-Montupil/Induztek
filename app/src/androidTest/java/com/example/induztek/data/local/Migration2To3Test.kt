@@ -8,6 +8,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.example.induztek.data.local.entity.InstrumentoEntity
 import com.example.induztek.data.local.migrations.MIGRATION_2_3
 import com.example.induztek.data.local.migrations.MIGRATION_3_4
+import com.example.induztek.data.local.migrations.MIGRATION_4_5
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -57,7 +58,7 @@ class Migration2To3Test {
                         `fechaVencimientoCalibracion` TEXT,
                         `observaciones` TEXT NOT NULL
                     )
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
                 sqliteDb.execSQL(
                     """
@@ -68,16 +69,16 @@ class Migration2To3Test {
                         `fechaVencimiento` TEXT NOT NULL,
                         FOREIGN KEY(`instrumentoId`) REFERENCES `instrumentos_medicion`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT
                     )
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
                 sqliteDb.execSQL(
-                    "CREATE INDEX IF NOT EXISTS index_calibraciones_instrumentoId ON calibraciones(instrumentoId)",
+                    "CREATE INDEX IF NOT EXISTS index_calibraciones_instrumentoId ON calibraciones(instrumentoId)"
                 )
                 sqliteDb.execSQL(
                     """
                     INSERT INTO instrumentos_medicion (id, nombre, tipoInstrumento, marca, modelo, numeroSerie, codigoInterno, observaciones)
                     VALUES (1, 'Instrumento A', 'Tipo A', 'Marca A', 'Modelo A', 'SERIE-001', 'COD-01', 'Obs A')
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
             } finally {
                 sqliteDb.close()
@@ -86,9 +87,9 @@ class Migration2To3Test {
             val db = Room.databaseBuilder(
                 context,
                 AppDatabase::class.java,
-                dbNameA,
+                dbNameA
             )
-                .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build()
 
             try {
@@ -103,7 +104,7 @@ class Migration2To3Test {
                     modelo = "Modelo B",
                     numeroSerie = "SERIE-001",
                     codigoInterno = "COD-02",
-                    observaciones = "Obs B",
+                    observaciones = "Obs B"
                 )
                 assertThrows(SQLiteConstraintException::class.java) {
                     runBlocking {
@@ -135,7 +136,7 @@ class Migration2To3Test {
                         `fechaVencimientoCalibracion` TEXT,
                         `observaciones` TEXT NOT NULL
                     )
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
                 sqliteDb.execSQL(
                     """
@@ -146,22 +147,22 @@ class Migration2To3Test {
                         `fechaVencimiento` TEXT NOT NULL,
                         FOREIGN KEY(`instrumentoId`) REFERENCES `instrumentos_medicion`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT
                     )
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
                 sqliteDb.execSQL(
-                    "CREATE INDEX IF NOT EXISTS index_calibraciones_instrumentoId ON calibraciones(instrumentoId)",
+                    "CREATE INDEX IF NOT EXISTS index_calibraciones_instrumentoId ON calibraciones(instrumentoId)"
                 )
                 sqliteDb.execSQL(
                     """
                     INSERT INTO instrumentos_medicion (id, nombre, tipoInstrumento, marca, modelo, numeroSerie, codigoInterno, observaciones)
                     VALUES (1, 'Instrumento A', 'Tipo A', 'Marca A', 'Modelo A', 'DUPLICATE-SERIES', 'COD-01', 'Obs A')
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
                 sqliteDb.execSQL(
                     """
                     INSERT INTO instrumentos_medicion (id, nombre, tipoInstrumento, marca, modelo, numeroSerie, codigoInterno, observaciones)
                     VALUES (2, 'Instrumento B', 'Tipo B', 'Marca B', 'Modelo B', 'DUPLICATE-SERIES', 'COD-02', 'Obs B')
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
             } finally {
                 sqliteDb.close()
@@ -171,9 +172,9 @@ class Migration2To3Test {
                 val failedDb = Room.databaseBuilder(
                     context,
                     AppDatabase::class.java,
-                    dbNameB,
+                    dbNameB
                 )
-                    .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
+                    .addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                     .build()
                 try {
                     failedDb.openHelper.writableDatabase

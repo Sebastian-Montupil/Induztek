@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.induztek.data.local.entity.EquipoEntity
 import com.example.induztek.data.local.migrations.MIGRATION_3_4
+import com.example.induztek.data.local.migrations.MIGRATION_4_5
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -58,10 +59,10 @@ class Migration3To4Test {
                         `fechaVencimientoCalibracion` TEXT,
                         `observaciones` TEXT NOT NULL
                     )
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
                 sqliteDb.execSQL(
-                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_instrumentos_medicion_numeroSerie` ON `instrumentos_medicion` (`numeroSerie`)",
+                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_instrumentos_medicion_numeroSerie` ON `instrumentos_medicion` (`numeroSerie`)"
                 )
                 sqliteDb.execSQL(
                     """
@@ -72,22 +73,22 @@ class Migration3To4Test {
                         `fechaVencimiento` TEXT NOT NULL,
                         FOREIGN KEY(`instrumentoId`) REFERENCES `instrumentos_medicion`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT
                     )
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
                 sqliteDb.execSQL(
-                    "CREATE INDEX IF NOT EXISTS `index_calibraciones_instrumentoId` ON `calibraciones` (`instrumentoId`)",
+                    "CREATE INDEX IF NOT EXISTS `index_calibraciones_instrumentoId` ON `calibraciones` (`instrumentoId`)"
                 )
                 sqliteDb.execSQL(
                     """
                     INSERT INTO instrumentos_medicion (id, nombre, tipoInstrumento, marca, modelo, numeroSerie, codigoInterno, fechaVencimientoCalibracion, observaciones)
                     VALUES (1, 'Multímetro V3', 'Instrumento', 'Fluke', '87V', 'SN-V3-001', 'MUL-01', '2026-12-31', 'Ninguna')
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
                 sqliteDb.execSQL(
                     """
                     INSERT INTO calibraciones (id, instrumentoId, fechaCalibracion, fechaVencimiento)
                     VALUES (1, 1, '2025-01-01', '2026-01-01')
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
             } finally {
                 sqliteDb.close()
@@ -96,13 +97,13 @@ class Migration3To4Test {
             db = Room.databaseBuilder(
                 context,
                 AppDatabase::class.java,
-                dbName,
+                dbName
             )
-                .addMigrations(MIGRATION_3_4)
+                .addMigrations(MIGRATION_3_4, MIGRATION_4_5)
                 .build()
 
             val currentVersion = db.openHelper.readableDatabase.version
-            assertEquals(4, currentVersion)
+            assertEquals(5, currentVersion)
 
             val instrumentos = db.instrumentoDao().obtenerInstrumentos().first()
             assertEquals(1, instrumentos.size)
@@ -123,8 +124,8 @@ class Migration3To4Test {
                     modelo = "TR-500",
                     numeroSerie = "SN-EQ-001",
                     codigoInterno = "TR-01",
-                    observaciones = "Nuevo equipo",
-                ),
+                    observaciones = "Nuevo equipo"
+                )
             )
             assertTrue(equipoId > 0)
 
@@ -155,10 +156,10 @@ class Migration3To4Test {
                         `fechaVencimientoCalibracion` TEXT,
                         `observaciones` TEXT NOT NULL
                     )
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
                 sqliteDb.execSQL(
-                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_instrumentos_medicion_numeroSerie` ON `instrumentos_medicion` (`numeroSerie`)",
+                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_instrumentos_medicion_numeroSerie` ON `instrumentos_medicion` (`numeroSerie`)"
                 )
                 sqliteDb.execSQL(
                     """
@@ -169,10 +170,10 @@ class Migration3To4Test {
                         `fechaVencimiento` TEXT NOT NULL,
                         FOREIGN KEY(`instrumentoId`) REFERENCES `instrumentos_medicion`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT
                     )
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
                 sqliteDb.execSQL(
-                    "CREATE INDEX IF NOT EXISTS `index_calibraciones_instrumentoId` ON `calibraciones` (`instrumentoId`)",
+                    "CREATE INDEX IF NOT EXISTS `index_calibraciones_instrumentoId` ON `calibraciones` (`instrumentoId`)"
                 )
             } finally {
                 sqliteDb.close()
@@ -181,9 +182,9 @@ class Migration3To4Test {
             db = Room.databaseBuilder(
                 context,
                 AppDatabase::class.java,
-                dbName,
+                dbName
             )
-                .addMigrations(MIGRATION_3_4)
+                .addMigrations(MIGRATION_3_4, MIGRATION_4_5)
                 .build()
 
             val equipo1 = EquipoEntity(
@@ -195,7 +196,7 @@ class Migration3To4Test {
                 modelo = "SM6",
                 numeroSerie = "SN-DUPLICATE",
                 codigoInterno = "CEL-01",
-                observaciones = "Obs 1",
+                observaciones = "Obs 1"
             )
             val id1 = db.equipoDao().insertarEquipo(equipo1)
             assertTrue(id1 > 0)
@@ -209,7 +210,7 @@ class Migration3To4Test {
                 modelo = "SM6",
                 numeroSerie = "SN-DUPLICATE",
                 codigoInterno = "CEL-02",
-                observaciones = "Obs 2",
+                observaciones = "Obs 2"
             )
 
             assertThrows(SQLiteConstraintException::class.java) {
