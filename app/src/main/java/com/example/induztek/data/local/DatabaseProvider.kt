@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.induztek.data.local.migrations.MIGRATION_1_2
 import com.example.induztek.data.local.migrations.MIGRATION_2_3
+import com.example.induztek.data.local.migrations.MIGRATION_3_4
 
 object DatabaseProvider {
 
@@ -17,7 +18,7 @@ object DatabaseProvider {
                 AppDatabase::class.java,
                 "induztek_terreno.db",
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build()
                 .also { INSTANCE = it }
         }
