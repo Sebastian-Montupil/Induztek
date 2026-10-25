@@ -4,6 +4,7 @@
     <string name="inicio_card_description">Registro de visitas técnicas y protocolos de pruebas de equipos eléctricos</string>
     <string name="inicio_equipos_card_title">Equipos e instrumentos</string>
     <string name="inicio_equipos_card_description">Gestión y registro de equipos e instrumentos de medición en terreno</string>
+    <string name="inicio_btn_cerrar_sesion">Cerrar sesión</string>
 
     <string name="visitas_top_bar_title">Visitas técnicas</string>
     <string name="visitas_back_button_content_description">Volver a inicio</string>
