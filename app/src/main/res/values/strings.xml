@@ -2,15 +2,15 @@
     <string name="app_name">Induztek</string>
     <string name="inicio_card_title">Trabajo en terreno</string>
     <string name="inicio_card_description">Registro de visitas técnicas y protocolos de pruebas de equipos eléctricos</string>
+    <string name="inicio_equipos_card_title">Equipos e instrumentos</string>
+    <string name="inicio_equipos_card_description">Gestión y registro de equipos e instrumentos de medición en terreno</string>
 
-    <!-- Visitas Técnicas -->
     <string name="visitas_top_bar_title">Visitas técnicas</string>
     <string name="visitas_back_button_content_description">Volver a inicio</string>
     <string name="visitas_title">Registro de visitas técnicas</string>
     <string name="visitas_empty_message">Todavía no hay visitas registradas.</string>
     <string name="visitas_btn_nueva_visita">Nueva visita</string>
 
-    <!-- Formulario Nueva Visita -->
     <string name="nueva_visita_top_bar_title">Nueva visita técnica</string>
     <string name="nueva_visita_back_button_content_description">Volver a visitas técnicas</string>
     <string name="nueva_visita_cliente_label">Cliente *</string>
@@ -30,7 +30,6 @@
     <string name="nueva_visita_observaciones_placeholder">Notas adicionales sobre la visita (opcional)</string>
     <string name="nueva_visita_btn_validar">Validar datos</string>
 
-    <!-- Mensajes de Error de Validación -->
     <string name="error_cliente_requerido">Debe seleccionar un cliente.</string>
     <string name="error_instalacion_requerida">Debe seleccionar una instalación.</string>
     <string name="error_fecha_requerida">Debe seleccionar una fecha de visita.</string>
@@ -38,11 +37,9 @@
     <string name="error_tipo_visita_requerido">Debe seleccionar un tipo de visita.</string>
     <string name="error_ingeniero_requerido">Debe seleccionar un ingeniero a cargo.</string>
 
-    <!-- DatePicker -->
     <string name="date_picker_confirm">Aceptar</string>
     <string name="date_picker_cancel">Cancelar</string>
 
-    <!-- Diálogo de Confirmación -->
     <string name="dialog_valid_title">Datos válidos</string>
     <string name="dialog_valid_message">Los datos de la visita son válidos. El guardado se implementará en la siguiente etapa.</string>
     <string name="dialog_accept">Aceptar</string>

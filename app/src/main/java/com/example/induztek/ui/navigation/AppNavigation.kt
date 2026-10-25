@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.induztek.ui.screens.EquiposScreen
 import com.example.induztek.ui.screens.InicioScreen
 import com.example.induztek.ui.screens.NuevaVisitaScreen
 import com.example.induztek.ui.screens.VisitasScreen
@@ -14,6 +15,7 @@ object Screen {
     const val INICIO = "inicio"
     const val VISITAS = "visitas"
     const val NUEVA_VISITA = "nueva_visita"
+    const val EQUIPOS = "equipos"
 }
 
 @Composable
@@ -30,6 +32,9 @@ fun AppNavigation(
             InicioScreen(
                 onNavigateToVisitas = {
                     navController.navigate(Screen.VISITAS)
+                },
+                onNavigateToEquipos = {
+                    navController.navigate(Screen.EQUIPOS)
                 }
             )
         }
@@ -45,6 +50,13 @@ fun AppNavigation(
         }
         composable(Screen.NUEVA_VISITA) {
             NuevaVisitaScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.EQUIPOS) {
+            EquiposScreen(
                 onBackClick = {
                     navController.popBackStack()
                 }
