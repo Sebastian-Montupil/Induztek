@@ -4,6 +4,7 @@ import com.example.induztek.data.local.dao.CalibracionDao
 import com.example.induztek.data.local.dao.InstrumentoDao
 import com.example.induztek.data.local.entity.InstrumentoEntity
 import com.example.induztek.domain.validation.ValidadorCalibracion
+import com.example.induztek.domain.validation.ValidadorPermisoInstrumentos
 import kotlinx.coroutines.flow.Flow
 
 class InstrumentoRepository(
@@ -12,7 +13,21 @@ class InstrumentoRepository(
 ) {
 
     suspend fun registrarInstrumento(instrumento: InstrumentoEntity): Long {
+        val usuario = SesionRepository.usuarioActual.value
+        val errorPermiso = ValidadorPermisoInstrumentos.validarGestion(usuario)
+        if (errorPermiso != null) {
+            throw SecurityException(errorPermiso)
+        }
         return instrumentoDao.insertarInstrumento(instrumento)
+    }
+
+    suspend fun actualizarInstrumento(instrumento: InstrumentoEntity): Int {
+        val usuario = SesionRepository.usuarioActual.value
+        val errorPermiso = ValidadorPermisoInstrumentos.validarGestion(usuario)
+        if (errorPermiso != null) {
+            throw SecurityException(errorPermiso)
+        }
+        return instrumentoDao.actualizarInstrumento(instrumento)
     }
 
     fun observarInstrumentos(): Flow<List<InstrumentoEntity>> {
