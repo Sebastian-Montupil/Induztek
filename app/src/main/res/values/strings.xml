@@ -9,4 +9,41 @@
     <string name="visitas_title">Registro de visitas técnicas</string>
     <string name="visitas_empty_message">Todavía no hay visitas registradas.</string>
     <string name="visitas_btn_nueva_visita">Nueva visita</string>
+
+    <!-- Formulario Nueva Visita -->
+    <string name="nueva_visita_top_bar_title">Nueva visita técnica</string>
+    <string name="nueva_visita_back_button_content_description">Volver a visitas técnicas</string>
+    <string name="nueva_visita_cliente_label">Cliente *</string>
+    <string name="nueva_visita_cliente_placeholder">Seleccionar cliente</string>
+    <string name="nueva_visita_instalacion_label">Instalación *</string>
+    <string name="nueva_visita_instalacion_placeholder">Seleccionar instalación</string>
+    <string name="nueva_visita_fecha_label">Fecha de visita *</string>
+    <string name="nueva_visita_fecha_placeholder">Seleccionar fecha (DD/MM/AAAA)</string>
+    <string name="nueva_visita_numero_ot_label">Número de OT *</string>
+    <string name="nueva_visita_numero_ot_placeholder">Ej: OT-2026-1187</string>
+    <string name="nueva_visita_tipo_visita_label">Tipo de visita *</string>
+    <string name="tipo_visita_solo_pruebas">Solo pruebas</string>
+    <string name="tipo_visita_pruebas_y_mant">Pruebas y mantenimiento</string>
+    <string name="nueva_visita_ingeniero_label">Ingeniero a cargo *</string>
+    <string name="nueva_visita_tecnicos_label">Técnicos participantes (Opcional)</string>
+    <string name="nueva_visita_observaciones_label">Observaciones</string>
+    <string name="nueva_visita_observaciones_placeholder">Notas adicionales sobre la visita (opcional)</string>
+    <string name="nueva_visita_btn_validar">Validar datos</string>
+
+    <!-- Mensajes de Error de Validación -->
+    <string name="error_cliente_requerido">Debe seleccionar un cliente.</string>
+    <string name="error_instalacion_requerida">Debe seleccionar una instalación.</string>
+    <string name="error_fecha_requerida">Debe seleccionar una fecha de visita.</string>
+    <string name="error_numero_ot_requerido">El número de OT es obligatorio.</string>
+    <string name="error_tipo_visita_requerido">Debe seleccionar un tipo de visita.</string>
+    <string name="error_ingeniero_requerido">Debe seleccionar un ingeniero a cargo.</string>
+
+    <!-- DatePicker -->
+    <string name="date_picker_confirm">Aceptar</string>
+    <string name="date_picker_cancel">Cancelar</string>
+
+    <!-- Diálogo de Confirmación -->
+    <string name="dialog_valid_title">Datos válidos</string>
+    <string name="dialog_valid_message">Los datos de la visita son válidos. El guardado se implementará en la siguiente etapa.</string>
+    <string name="dialog_accept">Aceptar</string>
 </resources>
