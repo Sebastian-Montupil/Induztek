@@ -17,10 +17,20 @@ class VisitasViewModel(
 
     val uiState: StateFlow<VisitasUiState> = visitaRepository.observarVisitas()
         .map { listaVisitas ->
-            VisitasUiState(visitas = listaVisitas, isLoading = false)
+            VisitasUiState(
+                visitas = listaVisitas,
+                isLoading = false,
+                errorMessage = null
+            )
         }
         .catch { error ->
-            emit(VisitasUiState(errorMessage = error.localizedMessage ?: "Error al cargar visitas"))
+            emit(
+                VisitasUiState(
+                    visitas = emptyList(),
+                    isLoading = false,
+                    errorMessage = error.localizedMessage ?: "Error al cargar el listado de visitas."
+                )
+            )
         }
         .stateIn(
             scope = viewModelScope,
