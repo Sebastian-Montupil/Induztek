@@ -85,8 +85,8 @@ fun EquiposScreen(
     var expandedInstalacion by remember { mutableStateOf(value = false) }
 
     val fotoStorage = remember { EquipoFotoStorage(context) }
-    var equipoExpandidoId by remember { mutableStateOf<Long?>(null) }
-    var equipoCapturaId by remember { mutableStateOf<Long?>(null) }
+    var equipoExpandidoId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var equipoCapturaId by rememberSaveable { mutableStateOf<Long?>(null) }
     var procesandoFoto by remember { mutableStateOf(value = false) }
 
     var fotoCamaraActual by remember { mutableStateOf<Bitmap?>(null) }

@@ -73,20 +73,19 @@ class EquipoFotoStorage(
     suspend fun guardarFotoGaleria(equipoId: Long, uri: Uri) {
         validarEquipoId(equipoId)
         withContext(Dispatchers.IO) {
-            val inputStream = applicationContext.contentResolver.openInputStream(uri)
-                ?: throw IllegalArgumentException("No se pudo abrir el InputStream de la URI proporcionada.")
-
-            val bytes = inputStream.use { it.readBytes() }
-
             val options = BitmapFactory.Options().apply {
                 inJustDecodeBounds = true
             }
-            BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+            applicationContext.contentResolver.openInputStream(uri)?.use { stream ->
+                BitmapFactory.decodeStream(stream, null, options)
+            } ?: throw IllegalArgumentException("No se pudo abrir el InputStream de la URI proporcionada.")
+
             options.inSampleSize = calcularInSampleSize(options)
             options.inJustDecodeBounds = false
 
-            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
-                ?: throw IllegalStateException("No se pudo decodificar el bitmap desde la URI.")
+            val bitmap = applicationContext.contentResolver.openInputStream(uri)?.use { stream ->
+                BitmapFactory.decodeStream(stream, null, options)
+            } ?: throw IllegalStateException("No se pudo decodificar el bitmap desde la URI.")
 
             val archivo = obtenerArchivoGaleria(equipoId)
             FileOutputStream(archivo).use { fos ->
