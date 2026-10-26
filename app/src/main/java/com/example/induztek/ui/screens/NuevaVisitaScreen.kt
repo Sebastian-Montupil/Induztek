@@ -1,5 +1,10 @@
 package com.example.induztek.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -345,7 +350,11 @@ fun NuevaVisitaScreen(
                     )
                 }
 
-                if (uiState.tipoVisitaError) {
+                AnimatedVisibility(
+                    visible = uiState.tipoVisitaError,
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically()
+                ) {
                     Text(
                         text = stringResource(id = R.string.error_tipo_visita_requerido),
                         color = MaterialTheme.colorScheme.error,
