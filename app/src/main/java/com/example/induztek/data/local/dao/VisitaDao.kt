@@ -21,6 +21,9 @@ interface VisitaDao {
     @Query("SELECT * FROM visitas ORDER BY fechaMillis DESC")
     fun obtenerVisitas(): Flow<List<VisitaEntity>>
 
+    @Query("SELECT * FROM visitas WHERE clienteId = :clienteId ORDER BY fechaMillis DESC")
+    fun obtenerVisitasPorCliente(clienteId: String): Flow<List<VisitaEntity>>
+
     @Query("SELECT * FROM visitas WHERE id = :id LIMIT 1")
     suspend fun obtenerVisitaPorId(id: Long): VisitaEntity?
 
