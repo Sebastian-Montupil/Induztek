@@ -1,16 +1,27 @@
 package com.example.induztek.ui.screens
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -27,17 +38,20 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.induztek.ui.theme.InduztekTheme
-import kotlinx.coroutines.launch
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.induztek.model.CatalogoClientes
+import com.example.induztek.viewmodel.EquipoViewModel
+import com.example.induztek.viewmodel.EquipoViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,16 +59,15 @@ fun RegistroEquipoScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
 ) {
-    var nombre by rememberSaveable { mutableStateOf(value = "") }
-    var tipo by rememberSaveable { mutableStateOf(value = "") }
-    var marca by rememberSaveable { mutableStateOf(value = "") }
-    var modelo by rememberSaveable { mutableStateOf(value = "") }
-    var numeroSerie by rememberSaveable { mutableStateOf(value = "") }
-    var codigoInterno by rememberSaveable { mutableStateOf(value = "") }
-    var observaciones by rememberSaveable { mutableStateOf(value = "") }
+    val context = LocalContext.current
+    val equipoViewModel: EquipoViewModel = viewModel(
+        factory = EquipoViewModelFactory(context),
+    )
+    val uiState by equipoViewModel.uiState.collectAsStateWithLifecycle()
 
-    var hasValidated by remember { mutableStateOf(value = false) }
-    var expanded by remember { mutableStateOf(value = false) }
+    var expandedCliente by remember { mutableStateOf(value = false) }
+    var expandedInstalacion by remember { mutableStateOf(value = false) }
+    var expandedTipo by remember { mutableStateOf(value = false) }
 
     val tiposList = listOf(
         "Interruptor",
@@ -65,12 +78,14 @@ fun RegistroEquipoScreen(
     )
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
 
-    val isNombreError = hasValidated && nombre.isBlank()
-    val isTipoError = hasValidated && tipo.isBlank()
-    val isMarcaError = hasValidated && marca.isBlank()
-    val isNumeroSerieError = hasValidated && numeroSerie.isBlank()
+    LaunchedEffect(uiState.mensajeError, uiState.mensajeExito) {
+        val mensaje = uiState.mensajeError ?: uiState.mensajeExito
+        if (mensaje != null) {
+            snackbarHostState.showSnackbar(mensaje)
+            equipoViewModel.limpiarMensajes()
+        }
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -110,39 +125,34 @@ fun RegistroEquipoScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Nombre del equipo
-            OutlinedTextField(
-                value = nombre,
-                onValueChange = { nombre = it },
-                label = { Text("Nombre del equipo *") },
-                isError = isNombreError,
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-            )
-            if (isNombreError) {
-                Text(
-                    text = "El nombre del equipo es obligatorio",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 16.dp, top = 4.dp),
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Tipo de equipo (Dropdown)
+            val clienteSeleccionado = CatalogoClientes.clientes.find { it.id == uiState.clienteSeleccionadoId }
             ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded },
+                expanded = expandedCliente,
+                onExpandedChange = { expandedCliente = !expandedCliente },
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 OutlinedTextField(
-                    value = tipo,
+                    value = clienteSeleccionado?.nombre ?: "",
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Tipo de equipo *") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    isError = isTipoError,
+                    label = { Text("Cliente *") },
+                    placeholder = { Text("Seleccione un cliente") },
+                    isError = uiState.clienteError,
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.Person, contentDescription = null)
+                    },
+                    supportingText = {
+                        if (uiState.clienteError) {
+                            Text(text = "Debe seleccionar un cliente válido")
+                        }
+                    },
+                    trailingIcon = {
+                        if (uiState.clienteError) {
+                            Icon(imageVector = Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                        } else {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCliente)
+                        }
+                    },
                     modifier = Modifier
                         .menuAnchor(
                             type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
@@ -151,135 +161,253 @@ fun RegistroEquipoScreen(
                         .fillMaxWidth(),
                 )
                 ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
+                    expanded = expandedCliente,
+                    onDismissRequest = { expandedCliente = false },
                 ) {
-                    tiposList.forEach { seleccion ->
+                    CatalogoClientes.clientes.forEach { cliente ->
                         DropdownMenuItem(
-                            text = { Text(seleccion) },
+                            text = { Text(cliente.nombre) },
                             onClick = {
-                                tipo = seleccion
-                                expanded = false
+                                equipoViewModel.onClienteSeleccionado(cliente.id)
+                                expandedCliente = false
                             },
                         )
                     }
                 }
             }
-            if (isTipoError) {
-                Text(
-                    text = "Debe seleccionar un tipo de equipo",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 16.dp, top = 4.dp),
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            val instalacionesDisponibles = CatalogoClientes.getInstalacionesPorCliente(uiState.clienteSeleccionadoId)
+            val instalacionHabilitada = ((uiState.clienteSeleccionadoId != null) && instalacionesDisponibles.isNotEmpty())
+            val instalacionSeleccionada = instalacionesDisponibles.find { it.id == uiState.instalacionSeleccionadaId }
+
+            ExposedDropdownMenuBox(
+                expanded = expandedInstalacion && instalacionHabilitada,
+                onExpandedChange = {
+                    if (instalacionHabilitada) {
+                        expandedInstalacion = !expandedInstalacion
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                OutlinedTextField(
+                    value = instalacionSeleccionada?.nombre ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    enabled = instalacionHabilitada,
+                    label = { Text("Instalación *") },
+                    placeholder = { Text("Seleccione una instalación") },
+                    isError = uiState.instalacionError,
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.Place, contentDescription = null)
+                    },
+                    supportingText = {
+                        if (uiState.instalacionError) {
+                            Text(text = "Debe seleccionar una instalación válida")
+                        }
+                    },
+                    trailingIcon = {
+                        if (uiState.instalacionError) {
+                            Icon(imageVector = Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                        } else if (instalacionHabilitada) {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedInstalacion)
+                        }
+                    },
+                    modifier = Modifier
+                        .menuAnchor(
+                            type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                            enabled = instalacionHabilitada,
+                        )
+                        .fillMaxWidth(),
                 )
+                ExposedDropdownMenu(
+                    expanded = expandedInstalacion && instalacionHabilitada,
+                    onDismissRequest = { expandedInstalacion = false },
+                ) {
+                    instalacionesDisponibles.forEach { instalacion ->
+                        DropdownMenuItem(
+                            text = { Text(instalacion.nombre) },
+                            onClick = {
+                                equipoViewModel.onInstalacionSeleccionada(instalacion.id)
+                                expandedInstalacion = false
+                            },
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Marca
             OutlinedTextField(
-                value = marca,
-                onValueChange = { marca = it },
+                value = uiState.nombre,
+                onValueChange = { equipoViewModel.onNombreCambia(it) },
+                label = { Text("Nombre del equipo *") },
+                isError = uiState.nombreError,
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Build, contentDescription = null)
+                },
+                supportingText = {
+                    if (uiState.nombreError) {
+                        Text(text = "El nombre del equipo es obligatorio")
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ExposedDropdownMenuBox(
+                expanded = expandedTipo,
+                onExpandedChange = { expandedTipo = !expandedTipo },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                OutlinedTextField(
+                    value = uiState.tipo,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Tipo de equipo *") },
+                    isError = uiState.tipoError,
+                    leadingIcon = {
+                        Icon(imageVector = Icons.AutoMirrored.Filled.List, contentDescription = null)
+                    },
+                    supportingText = {
+                        if (uiState.tipoError) {
+                            Text(text = "Debe seleccionar un tipo de equipo")
+                        }
+                    },
+                    trailingIcon = {
+                        if (uiState.tipoError) {
+                            Icon(imageVector = Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                        } else {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTipo)
+                        }
+                    },
+                    modifier = Modifier
+                        .menuAnchor(
+                            type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                            enabled = true,
+                        )
+                        .fillMaxWidth(),
+                )
+                ExposedDropdownMenu(
+                    expanded = expandedTipo,
+                    onDismissRequest = { expandedTipo = false },
+                ) {
+                    tiposList.forEach { seleccion ->
+                        DropdownMenuItem(
+                            text = { Text(seleccion) },
+                            onClick = {
+                                equipoViewModel.onTipoCambia(seleccion)
+                                expandedTipo = false
+                            },
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = uiState.marca,
+                onValueChange = { equipoViewModel.onMarcaCambia(it) },
                 label = { Text("Marca *") },
-                isError = isMarcaError,
+                isError = uiState.marcaError,
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Star, contentDescription = null)
+                },
+                supportingText = {
+                    if (uiState.marcaError) {
+                        Text(text = "La marca es obligatoria")
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
-            if (isMarcaError) {
-                Text(
-                    text = "La marca es obligatoria",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 16.dp, top = 4.dp),
-                )
-            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Modelo (opcional)
             OutlinedTextField(
-                value = modelo,
-                onValueChange = { modelo = it },
+                value = uiState.modelo,
+                onValueChange = { equipoViewModel.onModeloCambia(it) },
                 label = { Text("Modelo (opcional)") },
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Create, contentDescription = null)
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Número de serie
             OutlinedTextField(
-                value = numeroSerie,
-                onValueChange = { numeroSerie = it },
+                value = uiState.numeroSerie,
+                onValueChange = { equipoViewModel.onNumeroSerieCambia(it) },
                 label = { Text("Número de serie *") },
-                isError = isNumeroSerieError,
+                isError = uiState.numeroSerieError,
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Info, contentDescription = null)
+                },
+                supportingText = {
+                    if (uiState.numeroSerieError) {
+                        Text(text = "El número de serie es obligatorio")
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
-            if (isNumeroSerieError) {
-                Text(
-                    text = "El número de serie es obligatorio",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 16.dp, top = 4.dp),
-                )
-            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Código interno (opcional)
             OutlinedTextField(
-                value = codigoInterno,
-                onValueChange = { codigoInterno = it },
+                value = uiState.codigoInterno,
+                onValueChange = { equipoViewModel.onCodigoInternoCambia(it) },
                 label = { Text("Código interno (opcional)") },
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Info, contentDescription = null)
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Observaciones (opcional)
             OutlinedTextField(
-                value = observaciones,
-                onValueChange = { observaciones = it },
+                value = uiState.observaciones,
+                onValueChange = { equipoViewModel.onObservacionesCambia(it) },
                 label = { Text("Observaciones (opcional)") },
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Create, contentDescription = null)
+                },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3,
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botón Validar formulario
             Button(
-                onClick = {
-                    hasValidated = true
-                    val isValid = nombre.isNotBlank() &&
-                        tipo.isNotBlank() &&
-                        marca.isNotBlank() &&
-                        numeroSerie.isNotBlank()
-
-                    if (isValid) {
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar(
-                                "Formulario válido. El guardado estará disponible próximamente",
-                            )
-                        }
-                    }
-                },
+                onClick = { equipoViewModel.registrarEquipo() },
+                enabled = !uiState.guardando,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(text = "Validar formulario")
+                if (uiState.guardando) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.height(24.dp),
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp,
+                        )
+                    }
+                } else {
+                    Text(text = "Guardar equipo")
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun RegistroEquipoScreenPreview() {
-    InduztekTheme {
-        RegistroEquipoScreen()
     }
 }
