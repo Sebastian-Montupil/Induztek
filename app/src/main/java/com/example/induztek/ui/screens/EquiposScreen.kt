@@ -72,6 +72,16 @@ fun EquiposScreen(
     onAgregarEquipo: () -> Unit = {},
 ) {
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
+
+    if (selectedTabIndex == 1) {
+        InstrumentosContenido(
+            modifier = modifier,
+        ) {
+            selectedTabIndex = 0
+        }
+        return
+    }
+
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
@@ -202,226 +212,224 @@ fun EquiposScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (selectedTabIndex == 0) {
-                val clienteSeleccionado = CatalogoClientes.clientes.find { it.id == uiState.clienteSeleccionadoId }
-                ExposedDropdownMenuBox(
+            val clienteSeleccionado = CatalogoClientes.clientes.find { it.id == uiState.clienteSeleccionadoId }
+            ExposedDropdownMenuBox(
+                expanded = expandedCliente,
+                onExpandedChange = { expandedCliente = !expandedCliente },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                OutlinedTextField(
+                    value = clienteSeleccionado?.nombre ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Cliente") },
+                    placeholder = { Text("Seleccione un cliente") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCliente) },
+                    modifier = Modifier
+                        .menuAnchor(
+                            type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                            enabled = true,
+                        )
+                        .fillMaxWidth(),
+                )
+                ExposedDropdownMenu(
                     expanded = expandedCliente,
-                    onExpandedChange = { expandedCliente = !expandedCliente },
-                    modifier = Modifier.fillMaxWidth(),
+                    onDismissRequest = { expandedCliente = false },
                 ) {
-                    OutlinedTextField(
-                        value = clienteSeleccionado?.nombre ?: "",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Cliente") },
-                        placeholder = { Text("Seleccione un cliente") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCliente) },
-                        modifier = Modifier
-                            .menuAnchor(
-                                type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                                enabled = true,
-                            )
-                            .fillMaxWidth(),
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expandedCliente,
-                        onDismissRequest = { expandedCliente = false },
-                    ) {
-                        CatalogoClientes.clientes.forEach { cliente ->
-                            DropdownMenuItem(
-                                text = { Text(cliente.nombre) },
-                                onClick = {
-                                    equipoViewModel.onClienteSeleccionado(cliente.id)
-                                    expandedCliente = false
-                                },
-                            )
-                        }
+                    CatalogoClientes.clientes.forEach { cliente ->
+                        DropdownMenuItem(
+                            text = { Text(cliente.nombre) },
+                            onClick = {
+                                equipoViewModel.onClienteSeleccionado(cliente.id)
+                                expandedCliente = false
+                            },
+                        )
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-                val instalacionesDisponibles = CatalogoClientes.getInstalacionesPorCliente(uiState.clienteSeleccionadoId)
-                val instalacionHabilitada = ((uiState.clienteSeleccionadoId != null) && instalacionesDisponibles.isNotEmpty())
-                val instalacionSeleccionada = instalacionesDisponibles.find { it.id == uiState.instalacionSeleccionadaId }
+            val instalacionesDisponibles = CatalogoClientes.getInstalacionesPorCliente(uiState.clienteSeleccionadoId)
+            val instalacionHabilitada = ((uiState.clienteSeleccionadoId != null) && instalacionesDisponibles.isNotEmpty())
+            val instalacionSeleccionada = instalacionesDisponibles.find { it.id == uiState.instalacionSeleccionadaId }
 
-                ExposedDropdownMenuBox(
-                    expanded = expandedInstalacion && instalacionHabilitada,
-                    onExpandedChange = {
+            ExposedDropdownMenuBox(
+                expanded = expandedInstalacion && instalacionHabilitada,
+                onExpandedChange = {
+                    if (instalacionHabilitada) {
+                        expandedInstalacion = !expandedInstalacion
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                OutlinedTextField(
+                    value = instalacionSeleccionada?.nombre ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    enabled = instalacionHabilitada,
+                    label = { Text("Instalación") },
+                    placeholder = { Text("Seleccione una instalación") },
+                    trailingIcon = {
                         if (instalacionHabilitada) {
-                            expandedInstalacion = !expandedInstalacion
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedInstalacion)
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .menuAnchor(
+                            type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                            enabled = instalacionHabilitada,
+                        )
+                        .fillMaxWidth(),
+                )
+                ExposedDropdownMenu(
+                    expanded = expandedInstalacion && instalacionHabilitada,
+                    onDismissRequest = { expandedInstalacion = false },
                 ) {
-                    OutlinedTextField(
-                        value = instalacionSeleccionada?.nombre ?: "",
-                        onValueChange = {},
-                        readOnly = true,
-                        enabled = instalacionHabilitada,
-                        label = { Text("Instalación") },
-                        placeholder = { Text("Seleccione una instalación") },
-                        trailingIcon = {
-                            if (instalacionHabilitada) {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedInstalacion)
-                            }
-                        },
-                        modifier = Modifier
-                            .menuAnchor(
-                                type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                                enabled = instalacionHabilitada,
-                            )
-                            .fillMaxWidth(),
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expandedInstalacion && instalacionHabilitada,
-                        onDismissRequest = { expandedInstalacion = false },
-                    ) {
-                        instalacionesDisponibles.forEach { instalacion ->
-                            DropdownMenuItem(
-                                text = { Text(instalacion.nombre) },
-                                onClick = {
-                                    equipoViewModel.onInstalacionSeleccionada(instalacion.id)
-                                    expandedInstalacion = false
-                                },
-                            )
-                        }
+                    instalacionesDisponibles.forEach { instalacion ->
+                        DropdownMenuItem(
+                            text = { Text(instalacion.nombre) },
+                            onClick = {
+                                equipoViewModel.onInstalacionSeleccionada(instalacion.id)
+                                expandedInstalacion = false
+                            },
+                        )
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    if ((uiState.clienteSeleccionadoId == null) || (uiState.instalacionSeleccionadaId == null)) {
-                        Text(
-                            text = "Seleccione un cliente y una instalación para consultar los equipos.",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    } else if (uiState.equipos.isEmpty()) {
-                        Text(
-                            text = "Todavía no hay equipos registrados en esta instalación.",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            items(uiState.equipos) { equipo ->
-                                val expandido = equipoExpandidoId == equipo.id
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .animateContentSize()
-                                        .clickable {
-                                            equipoExpandidoId = if (expandido) null else equipo.id
-                                        },
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                if ((uiState.clienteSeleccionadoId == null) || (uiState.instalacionSeleccionadaId == null)) {
+                    Text(
+                        text = "Seleccione un cliente y una instalación para consultar los equipos.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else if (uiState.equipos.isEmpty()) {
+                    Text(
+                        text = "Todavía no hay equipos registrados en esta instalación.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        items(uiState.equipos) { equipo ->
+                            val expandido = equipoExpandidoId == equipo.id
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .animateContentSize()
+                                    .clickable {
+                                        equipoExpandidoId = if (expandido) null else equipo.id
+                                    },
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
                                 ) {
-                                    Column(
-                                        modifier = Modifier.padding(16.dp),
-                                    ) {
-                                        Text(
-                                            text = equipo.nombre,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            color = MaterialTheme.colorScheme.onSurface,
-                                        )
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Text(
-                                            text = "Tipo: ${equipo.tipo} | Marca: ${equipo.marca}",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
-                                        Text(
-                                            text = "Modelo: ${equipo.modelo.ifBlank { "N/A" }} | Serie: ${equipo.numeroSerie}",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
+                                    Text(
+                                        text = equipo.nombre,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "Tipo: ${equipo.tipo} | Marca: ${equipo.marca}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    Text(
+                                        text = "Modelo: ${equipo.modelo.ifBlank { "N/A" }} | Serie: ${equipo.numeroSerie}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
 
-                                        if (expandido) {
+                                    if (expandido) {
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        ) {
+                                            Button(
+                                                onClick = {
+                                                    equipoCapturaId = equipo.id
+                                                    cameraLauncher.launch(null)
+                                                },
+                                                enabled = !procesandoFoto,
+                                                modifier = Modifier.weight(1f),
+                                            ) {
+                                                Text(text = "Tomar foto")
+                                            }
+
+                                            OutlinedButton(
+                                                onClick = {
+                                                    equipoCapturaId = equipo.id
+                                                    galleryLauncher.launch("image/*")
+                                                },
+                                                enabled = !procesandoFoto,
+                                                modifier = Modifier.weight(1f),
+                                            ) {
+                                                Text(text = "Galería")
+                                            }
+                                        }
+
+                                        val camBitmap = fotoCamaraActual
+                                        val galBitmap = fotoGaleriaActual
+
+                                        if ((camBitmap != null) || (galBitmap != null)) {
                                             Spacer(modifier = Modifier.height(12.dp))
                                             Row(
                                                 modifier = Modifier.fillMaxWidth(),
                                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                             ) {
-                                                Button(
-                                                    onClick = {
-                                                        equipoCapturaId = equipo.id
-                                                        cameraLauncher.launch(null)
-                                                    },
-                                                    enabled = !procesandoFoto,
-                                                    modifier = Modifier.weight(1f),
-                                                ) {
-                                                    Text(text = "Tomar foto")
-                                                }
-
-                                                OutlinedButton(
-                                                    onClick = {
-                                                        equipoCapturaId = equipo.id
-                                                        galleryLauncher.launch("image/*")
-                                                    },
-                                                    enabled = !procesandoFoto,
-                                                    modifier = Modifier.weight(1f),
-                                                ) {
-                                                    Text(text = "Galería")
-                                                }
-                                            }
-
-                                            val camBitmap = fotoCamaraActual
-                                            val galBitmap = fotoGaleriaActual
-
-                                            if ((camBitmap != null) || (galBitmap != null)) {
-                                                Spacer(modifier = Modifier.height(12.dp))
-                                                Row(
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                                ) {
-                                                    if (camBitmap != null) {
-                                                        Column(
-                                                            modifier = Modifier.weight(1f),
-                                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                                        ) {
-                                                            Text(
-                                                                text = "Cámara",
-                                                                style = MaterialTheme.typography.labelSmall,
-                                                            )
-                                                            Spacer(modifier = Modifier.height(4.dp))
-                                                            Image(
-                                                                bitmap = camBitmap.asImageBitmap(),
-                                                                contentDescription = null,
-                                                                contentScale = ContentScale.Crop,
-                                                                modifier = Modifier
-                                                                    .size(100.dp)
-                                                                    .clip(RoundedCornerShape(8.dp)),
-                                                            )
-                                                        }
+                                                if (camBitmap != null) {
+                                                    Column(
+                                                        modifier = Modifier.weight(1f),
+                                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                                    ) {
+                                                        Text(
+                                                            text = "Cámara",
+                                                            style = MaterialTheme.typography.labelSmall,
+                                                        )
+                                                        Spacer(modifier = Modifier.height(4.dp))
+                                                        Image(
+                                                            bitmap = camBitmap.asImageBitmap(),
+                                                            contentDescription = null,
+                                                            contentScale = ContentScale.Crop,
+                                                            modifier = Modifier
+                                                                .size(100.dp)
+                                                                .clip(RoundedCornerShape(8.dp)),
+                                                        )
                                                     }
-                                                    if (galBitmap != null) {
-                                                        Column(
-                                                            modifier = Modifier.weight(1f),
-                                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                                        ) {
-                                                            Text(
-                                                                text = "Galería",
-                                                                style = MaterialTheme.typography.labelSmall,
-                                                            )
-                                                            Spacer(modifier = Modifier.height(4.dp))
-                                                            Image(
-                                                                bitmap = galBitmap.asImageBitmap(),
-                                                                contentDescription = null,
-                                                                contentScale = ContentScale.Crop,
-                                                                modifier = Modifier
-                                                                    .size(100.dp)
-                                                                    .clip(RoundedCornerShape(8.dp)),
-                                                            )
-                                                        }
+                                                }
+                                                if (galBitmap != null) {
+                                                    Column(
+                                                        modifier = Modifier.weight(1f),
+                                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                                    ) {
+                                                        Text(
+                                                            text = "Galería",
+                                                            style = MaterialTheme.typography.labelSmall,
+                                                        )
+                                                        Spacer(modifier = Modifier.height(4.dp))
+                                                        Image(
+                                                            bitmap = galBitmap.asImageBitmap(),
+                                                            contentDescription = null,
+                                                            contentScale = ContentScale.Crop,
+                                                            modifier = Modifier
+                                                                .size(100.dp)
+                                                                .clip(RoundedCornerShape(8.dp)),
+                                                        )
                                                     }
                                                 }
                                             }
@@ -432,41 +440,15 @@ fun EquiposScreen(
                         }
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Button(
-                    onClick = onAgregarEquipo,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(text = "Agregar equipo")
-                }
-
-            } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Text(
-                        text = "Todavía no hay instrumentos registrados.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-
-                Button(
-                    onClick = {
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("El registro estará disponible próximamente.")
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(text = "Agregar instrumento")
-                }
+            Button(
+                onClick = onAgregarEquipo,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(text = "Agregar equipo")
             }
         }
     }
