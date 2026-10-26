@@ -15,5 +15,9 @@ data class NuevaVisitaUiState(
     val numeroOtError: Boolean = false,
     val tipoVisitaError: Boolean = false,
     val ingenieroError: Boolean = false,
-    val showValidDialog: Boolean = false
+    val showValidDialog: Boolean = false,
+    val isSaving: Boolean = false,
+    val hasSuccessfullySaved: Boolean = false,
+    val showSuccessDialog: Boolean = false,
+    val errorPersistencia: String? = null
 )

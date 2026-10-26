@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -43,17 +45,21 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.induztek.R
+import com.example.induztek.data.local.DatabaseProvider
+import com.example.induztek.data.repository.VisitaRepository
 import com.example.induztek.model.CatalogoClientes
 import com.example.induztek.model.CatalogoPersonal
 import com.example.induztek.model.TipoVisita
 import com.example.induztek.ui.theme.InduztekTheme
 import com.example.induztek.viewmodel.NuevaVisitaViewModel
+import com.example.induztek.viewmodel.NuevaVisitaViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -63,9 +69,15 @@ import java.util.TimeZone
 @Composable
 fun NuevaVisitaScreen(
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    viewModel: NuevaVisitaViewModel = viewModel()
+    modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val viewModel: NuevaVisitaViewModel = viewModel(
+        factory = NuevaVisitaViewModelFactory(
+            VisitaRepository(DatabaseProvider.getDatabase(context).visitaDao())
+        )
+    )
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
@@ -101,7 +113,6 @@ fun NuevaVisitaScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-            // Campo: Cliente (Desplegable)
             val clienteSeleccionado = CatalogoClientes.clientes.find { it.id == uiState.clienteSeleccionadoId }
             ExposedDropdownMenuBox(
                 expanded = expandedCliente,
@@ -155,7 +166,6 @@ fun NuevaVisitaScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Campo: Instalación (Desplegable filtrado por cliente)
             val instalacionesDisponibles = CatalogoClientes.getInstalacionesPorCliente(uiState.clienteSeleccionadoId)
             val instalacionHabilitada = uiState.clienteSeleccionadoId != null && instalacionesDisponibles.isNotEmpty()
             val instalacionSeleccionada = instalacionesDisponibles.find { it.id == uiState.instalacionSeleccionadaId }
@@ -219,7 +229,6 @@ fun NuevaVisitaScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Campo: Fecha de visita
             OutlinedTextField(
                 value = formatUtcDateMillis(uiState.fechaSelectedMillis),
                 onValueChange = {},
@@ -255,20 +264,21 @@ fun NuevaVisitaScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Campo: Número de OT
             OutlinedTextField(
                 value = uiState.numeroOt,
                 onValueChange = { viewModel.onNumeroOtCambia(it) },
                 label = { Text(stringResource(id = R.string.nueva_visita_numero_ot_label)) },
                 placeholder = { Text(stringResource(id = R.string.nueva_visita_numero_ot_placeholder)) },
-                isError = uiState.numeroOtError,
+                isError = uiState.numeroOtError || uiState.errorPersistencia != null,
                 supportingText = {
                     if (uiState.numeroOtError) {
                         Text(stringResource(id = R.string.error_numero_ot_requerido))
+                    } else if (uiState.errorPersistencia != null) {
+                        Text(uiState.errorPersistencia ?: "", color = MaterialTheme.colorScheme.error)
                     }
                 },
                 trailingIcon = {
-                    if (uiState.numeroOtError) {
+                    if (uiState.numeroOtError || uiState.errorPersistencia != null) {
                         Icon(
                             imageVector = Icons.Default.Warning,
                             contentDescription = null,
@@ -282,7 +292,6 @@ fun NuevaVisitaScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Sección: Tipo de visita
             Column(modifier = Modifier.fillMaxWidth()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -348,7 +357,6 @@ fun NuevaVisitaScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Sección: Ingeniero a cargo
             Column(modifier = Modifier.fillMaxWidth()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -398,7 +406,6 @@ fun NuevaVisitaScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Sección: Técnicos participantes (Opcional)
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = stringResource(id = R.string.nueva_visita_tecnicos_label),
@@ -429,7 +436,6 @@ fun NuevaVisitaScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Campo: Observaciones (Opcional)
             OutlinedTextField(
                 value = uiState.observaciones,
                 onValueChange = { viewModel.onObservacionesCambia(it) },
@@ -442,17 +448,26 @@ fun NuevaVisitaScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botón: Validar datos
             Button(
                 onClick = { viewModel.validarDatos() },
+                enabled = !uiState.isSaving && !uiState.hasSuccessfullySaved,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = stringResource(id = R.string.nueva_visita_btn_validar))
+                if (uiState.isSaving) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "Guardando...")
+                } else {
+                    Text(text = stringResource(id = R.string.nueva_visita_btn_validar))
+                }
             }
         }
     }
 
-    // Diálogo de Selección de Fecha (DatePicker)
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(
             initialSelectedDateMillis = uiState.fechaSelectedMillis
@@ -481,16 +496,15 @@ fun NuevaVisitaScreen(
         }
     }
 
-    // Diálogo de Confirmación de Datos Válidos
-    if (uiState.showValidDialog) {
+    if (uiState.showSuccessDialog) {
         AlertDialog(
-            onDismissRequest = { viewModel.cerrarDialogo() },
-            title = { Text(text = stringResource(id = R.string.dialog_valid_title)) },
-            text = { Text(text = stringResource(id = R.string.dialog_valid_message)) },
+            onDismissRequest = { viewModel.cerrarDialogoExito() },
+            title = { Text(text = "Éxito") },
+            text = { Text(text = "Visita guardada correctamente") },
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.cerrarDialogo()
+                        viewModel.cerrarDialogoExito()
                     }
                 ) {
                     Text(text = stringResource(id = R.string.dialog_accept))
