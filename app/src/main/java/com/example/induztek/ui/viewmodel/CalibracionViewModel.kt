@@ -12,9 +12,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class CalibracionViewModel : ViewModel() {
-
-    private val remoto = ServiciosTerreno.calibraciones
+class CalibracionViewModel(
+    private val listarRemotas: suspend () -> List<CalibracionEntity> = {
+        ServiciosTerreno.calibraciones.listarCalibraciones()
+    },
+    private val registrarRemota: suspend (CalibracionEntity) -> Unit = {
+        ServiciosTerreno.calibraciones.registrarCalibracion(it)
+        Unit
+    }
+) : ViewModel() {
 
     private val _calibraciones =
         MutableStateFlow<List<CalibracionEntity>>(emptyList())
@@ -38,7 +44,7 @@ class CalibracionViewModel : ViewModel() {
             _cargando.value = true
 
             try {
-                _calibraciones.value = remoto.listarCalibraciones()
+                _calibraciones.value = listarRemotas()
                 _mensaje.value = null
             } catch (e: CancellationException) {
                 throw e
@@ -92,7 +98,7 @@ class CalibracionViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
-                remoto.registrarCalibracion(
+                registrarRemota(
                     CalibracionEntity(
                         instrumentoId = instrumentoId,
                         fechaCalibracion = fecha,
@@ -100,9 +106,8 @@ class CalibracionViewModel : ViewModel() {
                     )
                 )
 
-                _calibraciones.value = remoto.listarCalibraciones()
+                _calibraciones.value = listarRemotas()
                 _mensaje.value = "Calibración registrada exitosamente."
-
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
