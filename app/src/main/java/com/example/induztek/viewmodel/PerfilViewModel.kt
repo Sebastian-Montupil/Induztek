@@ -18,12 +18,12 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 
-class PerfilViewModel : ViewModel() {
+class PerfilViewModel(
+    private val usuarioApi: UsuarioApi = RetrofitClient.crearServicio(UsuarioApi::class.java),
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PerfilUiState())
     val uiState: StateFlow<PerfilUiState> = _uiState.asStateFlow()
-
-    private val usuarioApi = RetrofitClient.crearServicio(UsuarioApi::class.java)
 
     init {
         cargarPerfil()
@@ -106,7 +106,7 @@ class PerfilViewModel : ViewModel() {
                     cargo = actualizadoDto.ciudad,
                 )
                 SesionRepository.establecerUsuario(usuarioActualizado)
-                SesionManager.actualizarCorreo(usuarioActualizado.correo)
+                SesionManager.guardarCredenciales(usuarioActualizado.correo, currentState.contrasenaActual)
 
                 _uiState.update {
                     it.copy(
