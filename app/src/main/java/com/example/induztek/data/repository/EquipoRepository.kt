@@ -92,7 +92,15 @@ class EquipoRepository(
 
         return actualizaciones.flatMapLatest {
             flow {
+                val clienteId = CatalogoClientes.instalaciones
+                    .firstOrNull { it.id == instalacionId }
+                    ?.clienteId
+                    ?: throw IllegalArgumentException(
+                        "La instalación seleccionada no existe."
+                    )
+
                 val equipos = remoteDataSource.listarEquipos(
+                    clienteId = clienteId,
                     instalacionId = instalacionId
                 )
 
