@@ -18,12 +18,12 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 
-class IngresoViewModel : ViewModel() {
+class IngresoViewModel(
+    private val usuarioApi: UsuarioApi = RetrofitClient.crearServicio(UsuarioApi::class.java),
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(IngresoUiState())
     val uiState: StateFlow<IngresoUiState> = _uiState.asStateFlow()
-
-    private val usuarioApi = RetrofitClient.crearServicio(UsuarioApi::class.java)
 
     fun onCorreoCambia(correo: String) {
         _uiState.update { it.copy(correo = correo, errorIngreso = null) }
@@ -100,10 +100,6 @@ class IngresoViewModel : ViewModel() {
                 }
             } catch (e: IOException) {
                 SesionManager.cerrarSesion()
-                android.util.Log.e(
-                    "InduztekLogin",
-                    "Error: ${e.javaClass.simpleName}: ${e.message}"
-                )
                 _uiState.update {
                     it.copy(cargando = false, errorIngreso = "No se pudo conectar con el servidor.")
                 }
