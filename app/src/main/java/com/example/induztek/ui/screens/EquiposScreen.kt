@@ -168,7 +168,7 @@ fun EquiposScreen(
     }
 
     val galleryLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
+        contract = ActivityResultContracts.OpenDocument(),
     ) { uri ->
         val idObjetivo = equipoCapturaId
 
@@ -532,7 +532,7 @@ fun EquiposScreen(
                                                 onClick = {
                                                     equipoCapturaId = equipo.id
                                                     galleryLauncher.launch(
-                                                        "image/*"
+                                                        arrayOf("image/*")
                                                     )
                                                 },
                                                 enabled = !procesandoFoto,
