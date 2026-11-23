@@ -62,9 +62,11 @@ fun InstrumentosContenido(
     onBackClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
+
     val viewModel: InstrumentoViewModel = viewModel(
         factory = InstrumentoViewModelFactory(context),
     )
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val instrumentos by viewModel.instrumentos.collectAsStateWithLifecycle()
     val usuarioActual by SesionRepository.usuarioActual.collectAsStateWithLifecycle()
@@ -88,6 +90,7 @@ fun InstrumentosContenido(
 
     LaunchedEffect(uiState.mensajeError, uiState.mensajeExito) {
         val mensaje = uiState.mensajeError ?: uiState.mensajeExito
+
         if (mensaje != null) {
             snackbarHostState.showSnackbar(mensaje)
             viewModel.limpiarMensajes()
@@ -117,6 +120,7 @@ fun InstrumentosContenido(
             )
         },
     ) { innerPadding ->
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -124,6 +128,7 @@ fun InstrumentosContenido(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+
             item {
                 Text(
                     text = "Módulo de instrumentos de medición y calibración (RN-12).",
@@ -132,17 +137,27 @@ fun InstrumentosContenido(
                 )
             }
 
+
             if (esJefeTecnico) {
+
                 item {
                     Button(
-                        onClick = { mostrarFormulario = !mostrarFormulario },
+                        onClick = {
+                            mostrarFormulario = !mostrarFormulario
+                        },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text(text = if (mostrarFormulario) "Ocultar formulario de registro" else "Registrar instrumento")
+                        Text(
+                            text = if (mostrarFormulario)
+                                "Ocultar formulario de registro"
+                            else
+                                "Registrar instrumento"
+                        )
                     }
                 }
 
                 if (mostrarFormulario) {
+
                     item {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
@@ -151,6 +166,7 @@ fun InstrumentosContenido(
                                 modifier = Modifier.padding(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
+
                                 Text(
                                     text = "Nuevo instrumento de medición",
                                     style = MaterialTheme.typography.titleMedium,
@@ -158,15 +174,22 @@ fun InstrumentosContenido(
 
                                 OutlinedTextField(
                                     value = uiState.nombre,
-                                    onValueChange = { viewModel.onNombreCambia(it) },
-                                    label = { Text("Nombre del instrumento *") },
+                                    onValueChange = {
+                                        viewModel.onNombreCambia(it)
+                                    },
+                                    label = {
+                                        Text("Nombre del instrumento *")
+                                    },
                                     isError = uiState.nombreError,
                                     leadingIcon = {
-                                        Icon(imageVector = Icons.Default.Build, contentDescription = null)
+                                        Icon(
+                                            imageVector = Icons.Default.Build,
+                                            contentDescription = null
+                                        )
                                     },
                                     supportingText = {
                                         if (uiState.nombreError) {
-                                            Text(text = "El nombre es obligatorio")
+                                            Text("El nombre es obligatorio")
                                         }
                                     },
                                     modifier = Modifier.fillMaxWidth(),
@@ -175,28 +198,42 @@ fun InstrumentosContenido(
 
                                 ExposedDropdownMenuBox(
                                     expanded = expandedTipo,
-                                    onExpandedChange = { expandedTipo = !expandedTipo },
+                                    onExpandedChange = {
+                                        expandedTipo = !expandedTipo
+                                    },
                                     modifier = Modifier.fillMaxWidth(),
                                 ) {
+
                                     OutlinedTextField(
                                         value = uiState.tipoInstrumento,
                                         onValueChange = {},
                                         readOnly = true,
-                                        label = { Text("Tipo de instrumento *") },
+                                        label = {
+                                            Text("Tipo de instrumento *")
+                                        },
                                         isError = uiState.tipoInstrumentoError,
                                         leadingIcon = {
-                                            Icon(imageVector = Icons.AutoMirrored.Filled.List, contentDescription = null)
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.List,
+                                                contentDescription = null
+                                            )
                                         },
                                         supportingText = {
                                             if (uiState.tipoInstrumentoError) {
-                                                Text(text = "Debe seleccionar un tipo")
+                                                Text("Debe seleccionar un tipo")
                                             }
                                         },
                                         trailingIcon = {
                                             if (uiState.tipoInstrumentoError) {
-                                                Icon(imageVector = Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                                                Icon(
+                                                    imageVector = Icons.Default.Warning,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.error
+                                                )
                                             } else {
-                                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTipo)
+                                                ExposedDropdownMenuDefaults.TrailingIcon(
+                                                    expanded = expandedTipo
+                                                )
                                             }
                                         },
                                         modifier = Modifier
@@ -206,13 +243,19 @@ fun InstrumentosContenido(
                                             )
                                             .fillMaxWidth(),
                                     )
+
                                     ExposedDropdownMenu(
                                         expanded = expandedTipo,
-                                        onDismissRequest = { expandedTipo = false },
+                                        onDismissRequest = {
+                                            expandedTipo = false
+                                        },
                                     ) {
                                         tiposInstrumentoList.forEach { tipo ->
+
                                             DropdownMenuItem(
-                                                text = { Text(tipo) },
+                                                text = {
+                                                    Text(tipo)
+                                                },
                                                 onClick = {
                                                     viewModel.onTipoInstrumentoCambia(tipo)
                                                     expandedTipo = false
@@ -224,15 +267,22 @@ fun InstrumentosContenido(
 
                                 OutlinedTextField(
                                     value = uiState.marca,
-                                    onValueChange = { viewModel.onMarcaCambia(it) },
-                                    label = { Text("Marca *") },
+                                    onValueChange = {
+                                        viewModel.onMarcaCambia(it)
+                                    },
+                                    label = {
+                                        Text("Marca *")
+                                    },
                                     isError = uiState.marcaError,
                                     leadingIcon = {
-                                        Icon(imageVector = Icons.Default.Star, contentDescription = null)
+                                        Icon(
+                                            imageVector = Icons.Default.Star,
+                                            contentDescription = null
+                                        )
                                     },
                                     supportingText = {
                                         if (uiState.marcaError) {
-                                            Text(text = "La marca es obligatoria")
+                                            Text("La marca es obligatoria")
                                         }
                                     },
                                     modifier = Modifier.fillMaxWidth(),
@@ -241,10 +291,17 @@ fun InstrumentosContenido(
 
                                 OutlinedTextField(
                                     value = uiState.modelo,
-                                    onValueChange = { viewModel.onModeloCambia(it) },
-                                    label = { Text("Modelo (opcional)") },
+                                    onValueChange = {
+                                        viewModel.onModeloCambia(it)
+                                    },
+                                    label = {
+                                        Text("Modelo (opcional)")
+                                    },
                                     leadingIcon = {
-                                        Icon(imageVector = Icons.Default.Create, contentDescription = null)
+                                        Icon(
+                                            imageVector = Icons.Default.Create,
+                                            contentDescription = null
+                                        )
                                     },
                                     modifier = Modifier.fillMaxWidth(),
                                     singleLine = true,
@@ -252,15 +309,22 @@ fun InstrumentosContenido(
 
                                 OutlinedTextField(
                                     value = uiState.numeroSerie,
-                                    onValueChange = { viewModel.onNumeroSerieCambia(it) },
-                                    label = { Text("Número de serie *") },
+                                    onValueChange = {
+                                        viewModel.onNumeroSerieCambia(it)
+                                    },
+                                    label = {
+                                        Text("Número de serie *")
+                                    },
                                     isError = uiState.numeroSerieError,
                                     leadingIcon = {
-                                        Icon(imageVector = Icons.Default.Info, contentDescription = null)
+                                        Icon(
+                                            imageVector = Icons.Default.Info,
+                                            contentDescription = null
+                                        )
                                     },
                                     supportingText = {
                                         if (uiState.numeroSerieError) {
-                                            Text(text = "El número de serie es obligatorio")
+                                            Text("El número de serie es obligatorio")
                                         }
                                     },
                                     modifier = Modifier.fillMaxWidth(),
@@ -269,10 +333,17 @@ fun InstrumentosContenido(
 
                                 OutlinedTextField(
                                     value = uiState.codigoInterno,
-                                    onValueChange = { viewModel.onCodigoInternoCambia(it) },
-                                    label = { Text("Código interno (opcional)") },
+                                    onValueChange = {
+                                        viewModel.onCodigoInternoCambia(it)
+                                    },
+                                    label = {
+                                        Text("Código interno (opcional)")
+                                    },
                                     leadingIcon = {
-                                        Icon(imageVector = Icons.Default.Info, contentDescription = null)
+                                        Icon(
+                                            imageVector = Icons.Default.Info,
+                                            contentDescription = null
+                                        )
                                     },
                                     modifier = Modifier.fillMaxWidth(),
                                     singleLine = true,
@@ -280,15 +351,22 @@ fun InstrumentosContenido(
 
                                 OutlinedTextField(
                                     value = uiState.fechaVencimientoCalibracion,
-                                    onValueChange = { viewModel.onFechaVencimientoCalibracionCambia(it) },
-                                    label = { Text("Vencimiento calibración (opcional AAAA-MM-DD)") },
+                                    onValueChange = {
+                                        viewModel.onFechaVencimientoCalibracionCambia(it)
+                                    },
+                                    label = {
+                                        Text("Vencimiento calibración (opcional AAAA-MM-DD)")
+                                    },
                                     isError = uiState.fechaVencimientoError,
                                     leadingIcon = {
-                                        Icon(imageVector = Icons.Default.DateRange, contentDescription = null)
+                                        Icon(
+                                            imageVector = Icons.Default.DateRange,
+                                            contentDescription = null
+                                        )
                                     },
                                     supportingText = {
                                         if (uiState.fechaVencimientoError) {
-                                            Text(text = "Formato inválido (use AAAA-MM-DD)")
+                                            Text("Formato inválido (use AAAA-MM-DD)")
                                         }
                                     },
                                     modifier = Modifier.fillMaxWidth(),
@@ -297,21 +375,32 @@ fun InstrumentosContenido(
 
                                 OutlinedTextField(
                                     value = uiState.observaciones,
-                                    onValueChange = { viewModel.onObservacionesCambia(it) },
-                                    label = { Text("Observaciones (opcional)") },
+                                    onValueChange = {
+                                        viewModel.onObservacionesCambia(it)
+                                    },
+                                    label = {
+                                        Text("Observaciones (opcional)")
+                                    },
                                     leadingIcon = {
-                                        Icon(imageVector = Icons.Default.Create, contentDescription = null)
+                                        Icon(
+                                            imageVector = Icons.Default.Create,
+                                            contentDescription = null
+                                        )
                                     },
                                     modifier = Modifier.fillMaxWidth(),
                                     minLines = 3,
                                 )
 
                                 Button(
-                                    onClick = { viewModel.registrarInstrumento() },
+                                    onClick = {
+                                        viewModel.registrarInstrumento()
+                                    },
                                     enabled = !uiState.guardando,
                                     modifier = Modifier.fillMaxWidth(),
                                 ) {
+
                                     if (uiState.guardando) {
+
                                         Box(
                                             contentAlignment = Alignment.Center,
                                             modifier = Modifier.height(24.dp),
@@ -322,15 +411,18 @@ fun InstrumentosContenido(
                                                 strokeWidth = 2.dp,
                                             )
                                         }
+
                                     } else {
-                                        Text(text = "Guardar instrumento")
+                                        Text("Guardar instrumento")
                                     }
                                 }
                             }
                         }
                     }
                 }
+
             } else {
+
                 item {
                     Text(
                         text = "Nota: Solo el Jefe técnico activo puede registrar nuevos instrumentos (RN-12).",
@@ -339,6 +431,7 @@ fun InstrumentosContenido(
                     )
                 }
             }
+
 
             item {
                 Text(
@@ -349,6 +442,7 @@ fun InstrumentosContenido(
             }
 
             if (instrumentos.isEmpty()) {
+
                 item {
                     Text(
                         text = "Todavía no hay instrumentos de medición registrados.",
@@ -356,30 +450,40 @@ fun InstrumentosContenido(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+
             } else {
+
                 items(instrumentos) { instrumento ->
+
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp),
                         ) {
+
                             Text(
                                 text = instrumento.nombre,
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Spacer(
+                                modifier = Modifier.height(4.dp)
+                            )
+
                             Text(
                                 text = "Tipo: ${instrumento.tipoInstrumento} | Marca: ${instrumento.marca}",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+
                             Text(
                                 text = "Modelo: ${instrumento.modelo.ifBlank { "N/A" }} | Serie: ${instrumento.numeroSerie}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+
                             if (!instrumento.fechaVencimientoCalibracion.isNullOrBlank()) {
                                 Text(
                                     text = "Vencimiento calibración: ${instrumento.fechaVencimientoCalibracion}",
@@ -391,6 +495,17 @@ fun InstrumentosContenido(
                     }
                 }
             }
+
+
+            item {
+                CalibracionesContenido(
+                    instrumentos = instrumentos,
+                    esJefeTecnico = esJefeTecnico
+                )
+            }
+
         }
+
     }
+
 }
