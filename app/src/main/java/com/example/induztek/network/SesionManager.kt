@@ -7,6 +7,10 @@ object SesionManager {
     private var correoActual: String? = null
     private var contrasenaActual: String? = null
 
+    fun actualizarCorreo(correo: String) {
+        correoActual = correo.trim()
+    }
+
     fun guardarCredenciales(correo: String, contrasena: String) {
         correoActual = correo.trim()
         contrasenaActual = contrasena

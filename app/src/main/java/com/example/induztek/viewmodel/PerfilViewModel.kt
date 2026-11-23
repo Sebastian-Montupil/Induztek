@@ -84,8 +84,8 @@ class PerfilViewModel : ViewModel() {
         val correo = currentState.correo.trim()
         val ciudad = currentState.ciudad.trim()
 
-        if (nombre.isEmpty() || correo.isEmpty()) {
-            _uiState.update { it.copy(mensajeError = "Nombre y correo son obligatorios.") }
+        if (nombre.isEmpty() || correo.isEmpty() || ciudad.isEmpty()) {
+            _uiState.update { it.copy(mensajeError = "Nombre, correo y ciudad son obligatorios.") }
             return
         }
 
@@ -106,7 +106,7 @@ class PerfilViewModel : ViewModel() {
                     cargo = actualizadoDto.ciudad,
                 )
                 SesionRepository.establecerUsuario(usuarioActualizado)
-                SesionManager.guardarCredenciales(usuarioActualizado.correo, currentState.contrasenaActual)
+                SesionManager.actualizarCorreo(usuarioActualizado.correo)
 
                 _uiState.update {
                     it.copy(
@@ -170,8 +170,8 @@ class PerfilViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val dto = CambiarContrasenaDto(
-                    contrasenaActual = actual,
-                    contrasenaNueva = nueva,
+                    actual = actual,
+                    nueva = nueva,
                 )
                 usuarioApi.cambiarContrasena(usuarioId, dto)
 
