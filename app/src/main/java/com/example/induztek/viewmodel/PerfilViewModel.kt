@@ -106,7 +106,7 @@ class PerfilViewModel(
                     cargo = actualizadoDto.ciudad,
                 )
                 SesionRepository.establecerUsuario(usuarioActualizado)
-                SesionManager.guardarCredenciales(usuarioActualizado.correo, currentState.contrasenaActual)
+                SesionManager.actualizarCorreo(usuarioActualizado.correo)
 
                 _uiState.update {
                     it.copy(
