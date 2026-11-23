@@ -1,7 +1,8 @@
 package com.example.induztek.model
 
 data class IngresoUiState(
-    val usuariosDisponibles: List<Usuario> = emptyList(),
-    val usuarioSeleccionadoId: String? = null,
-    val errorIngreso: String? = null
+    val correo: String = "",
+    val contrasena: String = "",
+    val cargando: Boolean = false,
+    val errorIngreso: String? = null,
 )

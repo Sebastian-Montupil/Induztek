@@ -1,6 +1,7 @@
 package com.example.induztek.data.repository
 
 import com.example.induztek.model.Usuario
+import com.example.induztek.network.SesionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,5 +17,6 @@ object SesionRepository {
 
     fun cerrarSesion() {
         _usuarioActual.value = null
+        SesionManager.cerrarSesion()
     }
 }
