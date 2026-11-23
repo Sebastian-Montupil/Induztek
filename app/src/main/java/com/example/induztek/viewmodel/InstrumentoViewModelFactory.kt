@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.induztek.data.local.DatabaseProvider
 import com.example.induztek.data.repository.InstrumentoRepository
 import com.example.induztek.ui.viewmodel.InstrumentoViewModel
+import com.example.induztek.data.remote.terreno.ServiciosTerreno
 
 class InstrumentoViewModelFactory(
     context: Context,
@@ -16,7 +17,7 @@ class InstrumentoViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(InstrumentoViewModel::class.java)) {
             val database = DatabaseProvider.getDatabase(applicationContext)
-            val repository = InstrumentoRepository(database.instrumentoDao(), database.calibracionDao())
+            val repository = InstrumentoRepository(instrumentoDao = database.instrumentoDao(), calibracionDao = database.calibracionDao(), remoteDataSource = ServiciosTerreno.instrumentos)
             @Suppress("UNCHECKED_CAST")
             return InstrumentoViewModel(repository) as T
         }
