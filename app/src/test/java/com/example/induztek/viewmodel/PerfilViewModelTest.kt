@@ -288,4 +288,96 @@ class PerfilViewModelTest {
         val state = viewModel.uiState.value
         assertEquals("No se pudo conectar con el servidor.", state.mensajeErrorContrasena)
     }
+
+    @Test
+    fun actualizarPerfil_sinSesion_muestraError() {
+        SesionRepository.cerrarSesion()
+        val viewModel = PerfilViewModel(FakeUsuarioApi())
+
+        viewModel.actualizarPerfil()
+
+        assertEquals(
+            "No se encontró el ID de usuario activo.",
+            viewModel.uiState.value.mensajeError
+        )
+    }
+
+    @Test
+    fun actualizarPerfil_camposVacios_muestraError() {
+        val viewModel = PerfilViewModel(FakeUsuarioApi())
+
+        viewModel.onNombreCambia("")
+        viewModel.actualizarPerfil()
+
+        assertEquals(
+            "Nombre, correo y ciudad son obligatorios.",
+            viewModel.uiState.value.mensajeError
+        )
+    }
+
+    @Test
+    fun cambiarContrasena_camposVacios_muestraError() {
+        val viewModel = PerfilViewModel(FakeUsuarioApi())
+
+        viewModel.cambiarContrasena()
+
+        assertEquals(
+            "Todos los campos de contraseña son obligatorios.",
+            viewModel.uiState.value.mensajeErrorContrasena
+        )
+    }
+
+    @Test
+    fun cambiarContrasena_muyCorta_muestraError() {
+        val viewModel = PerfilViewModel(FakeUsuarioApi())
+
+        viewModel.onContrasenaActualCambia("123456")
+        viewModel.onContrasenaNuevaCambia("123")
+        viewModel.onConfirmarContrasenaCambia("123")
+
+        viewModel.cambiarContrasena()
+
+        assertEquals(
+            "La nueva contraseña debe tener al menos 6 caracteres.",
+            viewModel.uiState.value.mensajeErrorContrasena
+        )
+    }
+
+    @Test
+    fun cambiarContrasena_noCoinciden_muestraError() {
+        val viewModel = PerfilViewModel(FakeUsuarioApi())
+
+        viewModel.onContrasenaActualCambia("123456")
+        viewModel.onContrasenaNuevaCambia("nueva123")
+        viewModel.onConfirmarContrasenaCambia("otra123")
+
+        viewModel.cambiarContrasena()
+
+        assertEquals(
+            "Las nuevas contraseñas no coinciden.",
+            viewModel.uiState.value.mensajeErrorContrasena
+        )
+    }
+
+
+    @Test
+    fun limpiarMensajes_eliminaError() {
+        val viewModel = PerfilViewModel(FakeUsuarioApi())
+
+        // Provocamos un error de validación
+        viewModel.onNombreCambia("")
+        viewModel.actualizarPerfil()
+
+        // Comprobamos que apareció el error
+        assertNotNull(viewModel.uiState.value.mensajeError)
+
+        // Limpiamos los mensajes
+        viewModel.limpiarMensajes()
+
+        // Verificamos que quedaron vacíos
+        assertNull(viewModel.uiState.value.mensajeError)
+        assertNull(viewModel.uiState.value.mensajeExito)
+        assertNull(viewModel.uiState.value.mensajeErrorContrasena)
+        assertNull(viewModel.uiState.value.mensajeExitoContrasena)
+    }
 }
