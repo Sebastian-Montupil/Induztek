@@ -11,6 +11,7 @@ import com.example.induztek.ui.screens.EquiposScreen
 import com.example.induztek.ui.screens.IngresoScreen
 import com.example.induztek.ui.screens.InicioScreen
 import com.example.induztek.ui.screens.NuevaVisitaScreen
+import com.example.induztek.ui.screens.PerfilScreen
 import com.example.induztek.ui.screens.RegistroEquipoScreen
 import com.example.induztek.ui.screens.VisitasScreen
 
@@ -21,6 +22,7 @@ object Screen {
     const val NUEVA_VISITA = "nueva_visita"
     const val EQUIPOS = "equipos"
     const val REGISTRO_EQUIPO = "registro_equipo"
+    const val PERFIL = "perfil"
 }
 
 @Composable
@@ -52,6 +54,9 @@ fun AppNavigation(
                 },
                 onNavigateToEquipos = {
                     navController.navigate(Screen.EQUIPOS)
+                },
+                onNavigateToPerfil = {
+                    navController.navigate(Screen.PERFIL)
                 },
                 onCerrarSesion = {
                     SesionRepository.cerrarSesion()
@@ -93,6 +98,13 @@ fun AppNavigation(
         }
         composable(Screen.REGISTRO_EQUIPO) {
             RegistroEquipoScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.PERFIL) {
+            PerfilScreen(
                 onBackClick = {
                     navController.popBackStack()
                 }
