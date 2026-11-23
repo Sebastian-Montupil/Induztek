@@ -1,5 +1,10 @@
 package com.example.induztek.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,12 +30,17 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.induztek.ui.theme.InduztekTheme
@@ -43,7 +53,24 @@ fun IngresoScreen(
     modifier: Modifier = Modifier,
     viewModel: IngresoViewModel = viewModel(),
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    var errorPermiso by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    val permisoRedLocal = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { concedido ->
+        if (concedido) {
+            errorPermiso = null
+            viewModel.iniciarSesion(onIngresoExitoso)
+        } else {
+            errorPermiso =
+                "Debes permitir el acceso a la red local para conectarte al servidor."
+        }
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -78,10 +105,16 @@ fun IngresoScreen(
 
             OutlinedTextField(
                 value = uiState.correo,
-                onValueChange = { viewModel.onCorreoCambia(it) },
-                label = { Text("Correo electrónico") },
+                onValueChange = {
+                    viewModel.onCorreoCambia(it)
+                },
+                label = {
+                    Text("Correo electrónico")
+                },
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email
+                ),
                 modifier = Modifier.fillMaxWidth(),
             )
 
@@ -89,16 +122,34 @@ fun IngresoScreen(
 
             OutlinedTextField(
                 value = uiState.contrasena,
-                onValueChange = { viewModel.onContrasenaCambia(it) },
-                label = { Text("Contraseña") },
+                onValueChange = {
+                    viewModel.onContrasenaCambia(it)
+                },
+                label = {
+                    Text("Contraseña")
+                },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password
+                ),
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            if (errorPermiso != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = errorPermiso.orEmpty(),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
             if (uiState.errorIngreso != null) {
                 Spacer(modifier = Modifier.height(16.dp))
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth(),
@@ -108,9 +159,11 @@ fun IngresoScreen(
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.error,
                     )
+
                     Spacer(modifier = Modifier.width(8.dp))
+
                     Text(
-                        text = uiState.errorIngreso ?: "",
+                        text = uiState.errorIngreso.orEmpty(),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyMedium,
                     )
@@ -121,7 +174,22 @@ fun IngresoScreen(
 
             Button(
                 onClick = {
-                    viewModel.iniciarSesion(onIngresoExitoso)
+                    errorPermiso = null
+
+                    val necesitaPermiso =
+                        Build.VERSION.SDK_INT >= 37 &&
+                                ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.ACCESS_LOCAL_NETWORK
+                                ) != PackageManager.PERMISSION_GRANTED
+
+                    if (necesitaPermiso) {
+                        permisoRedLocal.launch(
+                            Manifest.permission.ACCESS_LOCAL_NETWORK
+                        )
+                    } else {
+                        viewModel.iniciarSesion(onIngresoExitoso)
+                    }
                 },
                 enabled = !uiState.cargando,
                 modifier = Modifier.fillMaxWidth(),
