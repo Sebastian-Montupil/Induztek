@@ -1,3 +1,4 @@
+
 package com.example.induztek.ui.screens
 
 import android.graphics.Bitmap
@@ -71,7 +72,9 @@ fun EquiposScreen(
     onBackClick: () -> Unit = {},
     onAgregarEquipo: () -> Unit = {},
 ) {
-    var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
+    var selectedTabIndex by rememberSaveable {
+        mutableIntStateOf(0)
+    }
 
     if (selectedTabIndex == 1) {
         InstrumentosContenido(
@@ -82,39 +85,81 @@ fun EquiposScreen(
         return
     }
 
-    val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
 
+    val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+
     val equipoViewModel: EquipoViewModel = viewModel(
         factory = EquipoViewModelFactory(context),
     )
+
     val uiState by equipoViewModel.uiState.collectAsStateWithLifecycle()
 
-    var expandedCliente by remember { mutableStateOf(value = false) }
-    var expandedInstalacion by remember { mutableStateOf(value = false) }
+    var expandedCliente by remember {
+        mutableStateOf(false)
+    }
 
-    val fotoStorage = remember { EquipoFotoStorage(context) }
-    var equipoExpandidoId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var equipoCapturaId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var procesandoFoto by remember { mutableStateOf(value = false) }
+    var expandedInstalacion by remember {
+        mutableStateOf(false)
+    }
 
-    var fotoCamaraActual by remember { mutableStateOf<Bitmap?>(null) }
-    var fotoGaleriaActual by remember { mutableStateOf<Bitmap?>(null) }
+    val fotoStorage = remember {
+        EquipoFotoStorage(context)
+    }
+
+    var equipoExpandidoId by rememberSaveable {
+        mutableStateOf<Long?>(null)
+    }
+
+    var equipoCapturaId by rememberSaveable {
+        mutableStateOf<Long?>(null)
+    }
+
+    var procesandoFoto by remember {
+        mutableStateOf(false)
+    }
+
+    var fotoCamaraActual by remember {
+        mutableStateOf<Bitmap?>(null)
+    }
+
+    var fotoGaleriaActual by remember {
+        mutableStateOf<Bitmap?>(null)
+    }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview(),
     ) { bitmap ->
         val idObjetivo = equipoCapturaId
-        if (((bitmap != null) && (idObjetivo != null)) && (idObjetivo > 0L)) {
+
+        if (
+            bitmap != null &&
+            idObjetivo != null &&
+            idObjetivo > 0L
+        ) {
             procesandoFoto = true
+
             coroutineScope.launch {
                 try {
-                    fotoStorage.guardarFotoCamara(idObjetivo, bitmap)
-                    fotoCamaraActual = fotoStorage.cargarFotoCamara(idObjetivo)
-                    snackbarHostState.showSnackbar("Fotografía de cámara guardada exitosamente.")
+                    fotoStorage.guardarFotoCamara(
+                        idObjetivo,
+                        bitmap
+                    )
+
+                    fotoCamaraActual =
+                        fotoStorage.cargarFotoCamara(idObjetivo)
+
+                    snackbarHostState.showSnackbar(
+                        "Fotografía de cámara guardada exitosamente."
+                    )
                 } catch (e: Exception) {
-                    snackbarHostState.showSnackbar("Error al guardar la foto de cámara: ${e.localizedMessage ?: "Desconocido"}")
+                    snackbarHostState.showSnackbar(
+                        "Error al guardar la foto de cámara: " +
+                                (e.localizedMessage ?: "Desconocido")
+                    )
                 } finally {
                     procesandoFoto = false
                 }
@@ -126,15 +171,32 @@ fun EquiposScreen(
         contract = ActivityResultContracts.GetContent(),
     ) { uri ->
         val idObjetivo = equipoCapturaId
-        if (((uri != null) && (idObjetivo != null)) && (idObjetivo > 0L)) {
+
+        if (
+            uri != null &&
+            idObjetivo != null &&
+            idObjetivo > 0L
+        ) {
             procesandoFoto = true
+
             coroutineScope.launch {
                 try {
-                    fotoStorage.guardarFotoGaleria(idObjetivo, uri)
-                    fotoGaleriaActual = fotoStorage.cargarFotoGaleria(idObjetivo)
-                    snackbarHostState.showSnackbar("Fotografía de galería guardada exitosamente.")
+                    fotoStorage.guardarFotoGaleria(
+                        idObjetivo,
+                        uri
+                    )
+
+                    fotoGaleriaActual =
+                        fotoStorage.cargarFotoGaleria(idObjetivo)
+
+                    snackbarHostState.showSnackbar(
+                        "Fotografía de galería guardada exitosamente."
+                    )
                 } catch (e: Exception) {
-                    snackbarHostState.showSnackbar("Error al guardar la foto de galería: ${e.localizedMessage ?: "Desconocido"}")
+                    snackbarHostState.showSnackbar(
+                        "Error al guardar la foto de galería: " +
+                                (e.localizedMessage ?: "Desconocido")
+                    )
                 } finally {
                     procesandoFoto = false
                 }
@@ -144,19 +206,27 @@ fun EquiposScreen(
 
     LaunchedEffect(equipoExpandidoId) {
         val id = equipoExpandidoId
-        if ((id != null) && (id > 0L)) {
-            fotoCamaraActual = fotoStorage.cargarFotoCamara(id)
-            fotoGaleriaActual = fotoStorage.cargarFotoGaleria(id)
+
+        if (id != null && id > 0L) {
+            fotoCamaraActual =
+                fotoStorage.cargarFotoCamara(id)
+
+            fotoGaleriaActual =
+                fotoStorage.cargarFotoGaleria(id)
         } else {
             fotoCamaraActual = null
             fotoGaleriaActual = null
         }
     }
 
-    val tabs = listOf("Equipos", "Instrumentos")
+    val tabs = listOf(
+        "Equipos",
+        "Instrumentos"
+    )
 
     LaunchedEffect(uiState.mensajeError) {
         val error = uiState.mensajeError
+
         if (error != null) {
             snackbarHostState.showSnackbar(error)
             equipoViewModel.limpiarMensajes()
@@ -165,11 +235,13 @@ fun EquiposScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = {
+            SnackbarHost(snackbarHostState)
+        },
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = "Equipos e instrumentos")
+                    Text("Equipos e instrumentos")
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -180,18 +252,22 @@ fun EquiposScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    containerColor =
+                        MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor =
+                        MaterialTheme.colorScheme.onPrimaryContainer,
                 ),
             )
         },
     ) { innerPadding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp),
         ) {
+
             Text(
                 text = "Módulo de gestión de equipos e instrumentos de medición utilizados en terreno.",
                 style = MaterialTheme.typography.bodyMedium,
@@ -200,31 +276,56 @@ fun EquiposScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
+            ClimaPanel()
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            PrimaryTabRow(
+                selectedTabIndex = selectedTabIndex
+            ) {
                 tabs.forEachIndexed { index, title ->
                     Tab(
                         selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
-                        text = { Text(text = title) },
+                        onClick = {
+                            selectedTabIndex = index
+                        },
+                        text = {
+                            Text(title)
+                        },
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            val clienteSeleccionado = CatalogoClientes.clientes.find { it.id == uiState.clienteSeleccionadoId }
+            val clienteSeleccionado =
+                CatalogoClientes.clientes.find {
+                    it.id == uiState.clienteSeleccionadoId
+                }
+
             ExposedDropdownMenuBox(
                 expanded = expandedCliente,
-                onExpandedChange = { expandedCliente = !expandedCliente },
+                onExpandedChange = {
+                    expandedCliente = !expandedCliente
+                },
                 modifier = Modifier.fillMaxWidth(),
             ) {
+
                 OutlinedTextField(
                     value = clienteSeleccionado?.nombre ?: "",
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Cliente") },
-                    placeholder = { Text("Seleccione un cliente") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCliente) },
+                    label = {
+                        Text("Cliente")
+                    },
+                    placeholder = {
+                        Text("Seleccione un cliente")
+                    },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(
+                            expanded = expandedCliente
+                        )
+                    },
                     modifier = Modifier
                         .menuAnchor(
                             type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
@@ -232,15 +333,22 @@ fun EquiposScreen(
                         )
                         .fillMaxWidth(),
                 )
+
                 ExposedDropdownMenu(
                     expanded = expandedCliente,
-                    onDismissRequest = { expandedCliente = false },
+                    onDismissRequest = {
+                        expandedCliente = false
+                    },
                 ) {
                     CatalogoClientes.clientes.forEach { cliente ->
                         DropdownMenuItem(
-                            text = { Text(cliente.nombre) },
+                            text = {
+                                Text(cliente.nombre)
+                            },
                             onClick = {
-                                equipoViewModel.onClienteSeleccionado(cliente.id)
+                                equipoViewModel.onClienteSeleccionado(
+                                    cliente.id
+                                )
                                 expandedCliente = false
                             },
                         )
@@ -250,12 +358,23 @@ fun EquiposScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            val instalacionesDisponibles = CatalogoClientes.getInstalacionesPorCliente(uiState.clienteSeleccionadoId)
-            val instalacionHabilitada = ((uiState.clienteSeleccionadoId != null) && instalacionesDisponibles.isNotEmpty())
-            val instalacionSeleccionada = instalacionesDisponibles.find { it.id == uiState.instalacionSeleccionadaId }
+            val instalacionesDisponibles =
+                CatalogoClientes.getInstalacionesPorCliente(
+                    uiState.clienteSeleccionadoId
+                )
+
+            val instalacionHabilitada =
+                uiState.clienteSeleccionadoId != null &&
+                        instalacionesDisponibles.isNotEmpty()
+
+            val instalacionSeleccionada =
+                instalacionesDisponibles.find {
+                    it.id == uiState.instalacionSeleccionadaId
+                }
 
             ExposedDropdownMenuBox(
-                expanded = expandedInstalacion && instalacionHabilitada,
+                expanded = expandedInstalacion &&
+                        instalacionHabilitada,
                 onExpandedChange = {
                     if (instalacionHabilitada) {
                         expandedInstalacion = !expandedInstalacion
@@ -263,16 +382,23 @@ fun EquiposScreen(
                 },
                 modifier = Modifier.fillMaxWidth(),
             ) {
+
                 OutlinedTextField(
                     value = instalacionSeleccionada?.nombre ?: "",
                     onValueChange = {},
                     readOnly = true,
                     enabled = instalacionHabilitada,
-                    label = { Text("Instalación") },
-                    placeholder = { Text("Seleccione una instalación") },
+                    label = {
+                        Text("Instalación")
+                    },
+                    placeholder = {
+                        Text("Seleccione una instalación")
+                    },
                     trailingIcon = {
                         if (instalacionHabilitada) {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedInstalacion)
+                            ExposedDropdownMenuDefaults.TrailingIcon(
+                                expanded = expandedInstalacion
+                            )
                         }
                     },
                     modifier = Modifier
@@ -282,15 +408,23 @@ fun EquiposScreen(
                         )
                         .fillMaxWidth(),
                 )
+
                 ExposedDropdownMenu(
-                    expanded = expandedInstalacion && instalacionHabilitada,
-                    onDismissRequest = { expandedInstalacion = false },
+                    expanded = expandedInstalacion &&
+                            instalacionHabilitada,
+                    onDismissRequest = {
+                        expandedInstalacion = false
+                    },
                 ) {
                     instalacionesDisponibles.forEach { instalacion ->
                         DropdownMenuItem(
-                            text = { Text(instalacion.nombre) },
+                            text = {
+                                Text(instalacion.nombre)
+                            },
                             onClick = {
-                                equipoViewModel.onInstalacionSeleccionada(instalacion.id)
+                                equipoViewModel.onInstalacionSeleccionada(
+                                    instalacion.id
+                                )
                                 expandedInstalacion = false
                             },
                         )
@@ -307,47 +441,65 @@ fun EquiposScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
-                if ((uiState.clienteSeleccionadoId == null) || (uiState.instalacionSeleccionadaId == null)) {
+
+                if (
+                    uiState.clienteSeleccionadoId == null ||
+                    uiState.instalacionSeleccionadaId == null
+                ) {
                     Text(
                         text = "Seleccione un cliente y una instalación para consultar los equipos.",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+
                 } else if (uiState.equipos.isEmpty()) {
                     Text(
                         text = "Todavía no hay equipos registrados en esta instalación.",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         items(uiState.equipos) { equipo ->
-                            val expandido = equipoExpandidoId == equipo.id
+
+                            val expandido =
+                                equipoExpandidoId == equipo.id
+
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .animateContentSize()
                                     .clickable {
-                                        equipoExpandidoId = if (expandido) null else equipo.id
+                                        equipoExpandidoId =
+                                            if (expandido) null
+                                            else equipo.id
                                     },
                             ) {
+
                                 Column(
                                     modifier = Modifier.padding(16.dp),
                                 ) {
+
                                     Text(
                                         text = equipo.nombre,
                                         style = MaterialTheme.typography.titleMedium,
                                         color = MaterialTheme.colorScheme.onSurface,
                                     )
-                                    Spacer(modifier = Modifier.height(4.dp))
+
+                                    Spacer(
+                                        modifier = Modifier.height(4.dp)
+                                    )
+
                                     Text(
                                         text = "Tipo: ${equipo.tipo} | Marca: ${equipo.marca}",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
+
                                     Text(
                                         text = "Modelo: ${equipo.modelo.ifBlank { "N/A" }} | Serie: ${equipo.numeroSerie}",
                                         style = MaterialTheme.typography.bodySmall,
@@ -355,11 +507,16 @@ fun EquiposScreen(
                                     )
 
                                     if (expandido) {
-                                        Spacer(modifier = Modifier.height(12.dp))
+
+                                        Spacer(
+                                            modifier = Modifier.height(12.dp)
+                                        )
+
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                                         ) {
+
                                             Button(
                                                 onClick = {
                                                     equipoCapturaId = equipo.id
@@ -368,67 +525,92 @@ fun EquiposScreen(
                                                 enabled = !procesandoFoto,
                                                 modifier = Modifier.weight(1f),
                                             ) {
-                                                Text(text = "Tomar foto")
+                                                Text("Tomar foto")
                                             }
 
                                             OutlinedButton(
                                                 onClick = {
                                                     equipoCapturaId = equipo.id
-                                                    galleryLauncher.launch("image/*")
+                                                    galleryLauncher.launch(
+                                                        "image/*"
+                                                    )
                                                 },
                                                 enabled = !procesandoFoto,
                                                 modifier = Modifier.weight(1f),
                                             ) {
-                                                Text(text = "Galería")
+                                                Text("Galería")
                                             }
                                         }
 
                                         val camBitmap = fotoCamaraActual
                                         val galBitmap = fotoGaleriaActual
 
-                                        if ((camBitmap != null) || (galBitmap != null)) {
-                                            Spacer(modifier = Modifier.height(12.dp))
+                                        if (
+                                            camBitmap != null ||
+                                            galBitmap != null
+                                        ) {
+
+                                            Spacer(
+                                                modifier = Modifier.height(12.dp)
+                                            )
+
                                             Row(
                                                 modifier = Modifier.fillMaxWidth(),
                                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                             ) {
+
                                                 if (camBitmap != null) {
                                                     Column(
                                                         modifier = Modifier.weight(1f),
                                                         horizontalAlignment = Alignment.CenterHorizontally,
                                                     ) {
+
                                                         Text(
                                                             text = "Cámara",
                                                             style = MaterialTheme.typography.labelSmall,
                                                         )
-                                                        Spacer(modifier = Modifier.height(4.dp))
+
+                                                        Spacer(
+                                                            modifier = Modifier.height(4.dp)
+                                                        )
+
                                                         Image(
                                                             bitmap = camBitmap.asImageBitmap(),
                                                             contentDescription = null,
                                                             contentScale = ContentScale.Crop,
                                                             modifier = Modifier
                                                                 .size(100.dp)
-                                                                .clip(RoundedCornerShape(8.dp)),
+                                                                .clip(
+                                                                    RoundedCornerShape(8.dp)
+                                                                ),
                                                         )
                                                     }
                                                 }
+
                                                 if (galBitmap != null) {
                                                     Column(
                                                         modifier = Modifier.weight(1f),
                                                         horizontalAlignment = Alignment.CenterHorizontally,
                                                     ) {
+
                                                         Text(
                                                             text = "Galería",
                                                             style = MaterialTheme.typography.labelSmall,
                                                         )
-                                                        Spacer(modifier = Modifier.height(4.dp))
+
+                                                        Spacer(
+                                                            modifier = Modifier.height(4.dp)
+                                                        )
+
                                                         Image(
                                                             bitmap = galBitmap.asImageBitmap(),
                                                             contentDescription = null,
                                                             contentScale = ContentScale.Crop,
                                                             modifier = Modifier
                                                                 .size(100.dp)
-                                                                .clip(RoundedCornerShape(8.dp)),
+                                                                .clip(
+                                                                    RoundedCornerShape(8.dp)
+                                                                ),
                                                         )
                                                     }
                                                 }
@@ -448,7 +630,7 @@ fun EquiposScreen(
                 onClick = onAgregarEquipo,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(text = "Agregar equipo")
+                Text("Agregar equipo")
             }
         }
     }
