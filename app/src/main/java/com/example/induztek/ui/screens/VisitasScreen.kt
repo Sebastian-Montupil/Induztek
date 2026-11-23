@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.induztek.R
 import com.example.induztek.data.local.DatabaseProvider
+import com.example.induztek.data.remote.terreno.ServiciosTerreno
 import com.example.induztek.data.repository.VisitaRepository
 import com.example.induztek.model.CatalogoClientes
 import com.example.induztek.model.CatalogoPersonal
@@ -56,7 +57,7 @@ fun VisitasScreen(
     val context = LocalContext.current
     val viewModel: VisitasViewModel = viewModel(
         factory = VisitasViewModelFactory(
-            VisitaRepository(DatabaseProvider.getDatabase(context).visitaDao())
+            VisitaRepository(DatabaseProvider.getDatabase(context).visitaDao(), ServiciosTerreno.visitas)
         )
     )
 
