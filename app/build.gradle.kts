@@ -6,6 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.induztek"
+
     compileSdk {
         version = release(37)
     }
@@ -24,14 +25,20 @@ android {
         release {
             optimization {
                 enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
+                packageScope = setOf(
+                    "androidx.**",
+                    "kotlin.**",
+                    "kotlinx.**"
+                )
             }
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     buildFeatures {
         compose = true
     }
@@ -50,13 +57,20 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
+
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+
     testImplementation(libs.junit)
+
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
