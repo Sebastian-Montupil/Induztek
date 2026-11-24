@@ -1,127 +1,210 @@
-# Induztek Terreno — EQ073
+# Induztek Terreno — EQ073 | Evaluación 3
 
-Aplicación Android desarrollada para apoyar el registro y la consulta de actividades técnicas en terreno de **Induztek**. El proyecto corresponde a la Evaluación Parcial 2 / Defensa Parcial 3 de Desarrollo de Aplicaciones Móviles.
+Aplicación Android de gestión de visitas técnicas, equipos, instrumentos y calibraciones de Induztek. Proyecto académico de **Desarrollo de Aplicaciones Móviles (DSY1105)**, desarrollado en Kotlin con Jetpack Compose y conectado a un backend Spring Boot mediante Retrofit.
 
-## Equipo
+## Equipo y repositorios
 
-- **Sebastián Montupil:** visitas técnicas, persistencia y consulta de visitas, navegación y animación del formulario.
-- **Vicente Martínez:** equipos, fotografías, instrumentos, validaciones y reglas asociadas a instrumentos y calibraciones.
-- **Equipo:** EQ073.
+- **Sebastián Montupil y Vicente Martínez** — equipo EQ073; desarrollo e integración colaborativos.
+- Android: https://github.com/Sebastian-Montupil/Induztek
+- Backend: https://github.com/dzzetafps/induztek-microservicios
+- Tablero Trello: https://trello.com/b/cikJWwM5/induztek-terreno-eq073
+- **Rama integrada de Android:** `feature/integracion-e3-final`.
+- **Rama integrada del backend:** `feature/sebastian-e3-integracion-backend`.
 
-## Tecnologías y estructura
+> Las ramas de integración son las referencias utilizadas para la evaluación 3. No se debe suponer que `master` o `main` ya contienen estos cambios.
 
-- **Lenguaje:** Kotlin.
-- **Interfaz:** Jetpack Compose y Material 3.
-- **Arquitectura:** MVVM sencillo con `UiState`, `ViewModel`, `StateFlow` y `collectAsStateWithLifecycle`.
-- **Persistencia local sin conexión:** Room con DAOs, entidades, repositorios y migraciones hasta la versión 5.
-- **Navegación:** Navigation Compose mediante `AppNavigation.kt`.
-- **Operaciones asíncronas:** Kotlin Coroutines y Flow.
-- **Control de versiones:** Git y GitHub, con ramas y Pull Requests individuales.
+## Arquitectura y tecnologías
 
-### Organización del código
+| Componente | Implementación |
+| --- | --- |
+| Interfaz Android | Kotlin, Jetpack Compose, Material 3, Navigation Compose |
+| Organización | MVVM, ViewModels, StateFlow, coroutines y repositorios |
+| Persistencia local | Room, DAOs, entidades y migraciones |
+| Integración remota | Retrofit, OkHttp y Gson |
+| Autenticación | Usuario y contraseña; peticiones protegidas con autenticación HTTP Basic a través del Gateway |
+| Backend | Spring Boot, Java 21, Eureka, API Gateway, tres microservicios |
+| Datos del servidor | Tres bases MySQL: `induztek_usuarios`, `induztek_visitas`, `induztek_equipos` |
+| API externa | Open-Meteo, información meteorológica de referencia |
 
-- `app/src/main/java/com/example/induztek/model/`: modelos de interfaz, catálogos y estados.
-- `app/src/main/java/com/example/induztek/ui/screens/`: pantallas Compose.
-- `app/src/main/java/com/example/induztek/ui/navigation/`: rutas de navegación.
-- `app/src/main/java/com/example/induztek/viewmodel/`: ViewModels y factories.
-- `app/src/main/java/com/example/induztek/data/local/`: base de datos Room, DAOs, entidades y migraciones.
-- `app/src/main/java/com/example/induztek/data/repository/`: acceso a datos y lógica de repositorios.
-- `app/src/main/java/com/example/induztek/domain/validation/`: validaciones desacopladas.
-- `app/src/test/`: pruebas unitarias.
-- `app/src/androidTest/`: pruebas instrumentadas.
+Arquitectura de conexión:
 
-## Funcionalidades implementadas
+```text
+Android (Retrofit)
+       |
+       | http://10.0.2.2:8081/  (emulador estándar)
+       v
+API Gateway :8081 ---- Eureka :8761
+       |                 (descubrimiento)
+       +-- ms-usuarios :8082 --> MySQL induztek_usuarios
+       +-- ms-visitas  :8083 --> MySQL induztek_visitas
+       +-- ms-equipos  :8084 --> MySQL induztek_equipos
+```
 
-### Inicio de sesión y roles
+La aplicación solicita el clima a **Open-Meteo** directamente desde Android; no pasa por uno de estos microservicios.
 
-- Pantalla de ingreso, sesión y navegación principal.
-- Catálogos de usuarios y roles: cliente, técnico, ingeniero y jefe técnico.
-- Restricciones de acceso a consultas de visitas: los clientes solo obtienen visitas de su empresa desde la capa de datos; usuarios internos autorizados pueden consultar el conjunto correspondiente.
+## Funcionalidades
 
-### Visitas técnicas
+- **Inicio de sesión y perfil:** autenticación, consulta de perfil, actualización de información y cierre de sesión.
+- **Visitas técnicas:** registro de orden de trabajo, cliente, instalación, fecha, tipo, ingeniero, técnicos y observaciones; consulta de visitas persistidas mediante el servicio remoto.
+- **Equipos:** registro y consulta por cliente e instalación; número de serie único en el backend; mensajes de validación y manejo de errores.
+- **Fotografías:** captura por cámara y selección desde galería, con almacenamiento privado en el dispositivo y recuperación tras reabrir la aplicación. **Las imágenes son locales, no se sincronizan con MySQL.**
+- **Instrumentos:** registro y consulta mediante Retrofit y el microservicio de equipos; validaciones y reglas de acceso.
+- **Calibraciones:** interfaz y lógica de gestión; la implementación de `CalibracionRepository` que existe en esta rama trabaja con el DAO local de Room.
+- **Clima:** temperatura, humedad y precipitación de referencia obtenidas de Open-Meteo.
 
-- Formulario para registrar visita con cliente, instalación vinculada al cliente, fecha, número de orden de trabajo (OT), tipo de visita, ingeniero a cargo, técnicos participantes y observaciones.
-- Validaciones de campos y control de OT duplicada.
-- Prevención de guardados repetidos, indicador de guardado y confirmación de éxito.
-- Persistencia en Room de visitas y técnicos asociados.
-- Listado reactivo desde Room, con estados diferenciados de carga, error y lista vacía.
-- Animación `AnimatedVisibility` para mensajes de validación.
+### Alcances técnicos conocidos
 
-### Equipos
+- En esta versión `RetrofitClient.kt` utiliza `http://10.0.2.2:8081/` como URL fija para el **emulador Android estándar ejecutado en el mismo computador** que el backend. No es una dirección válida para un teléfono físico ni para conectarse a un Gateway alojado en otro equipo.
+- La consulta de técnicos asociados a una visita desde el repositorio remoto todavía no está disponible: el método correspondiente lanza `UnsupportedOperationException`.
+- En `InstrumentoRepository`, la actualización remota de instrumentos no está implementada; la validación contra calibraciones aún usa DAOs locales.
+- La disponibilidad de cada funcionalidad requiere que estén levantados los servicios y bases de datos de los que depende. Los datos MySQL del computador personal **no viajan automáticamente** al computador de la universidad.
 
-- Registro de equipos asociados a cliente e instalación.
-- Formulario con iconos, validaciones y mensajes específicos.
-- Listado reactivo consultado por cliente e instalación, con almacenamiento en Room.
-- Navegación desde el listado al registro de equipos.
-- Tarjetas expandibles animadas con `animateContentSize`.
-- Captura mediante cámara y selección desde galería utilizando APIs nativas de Android (`ActivityResultContracts`).
-- Almacenamiento local privado de fotografías vinculadas al identificador del equipo.
+## Ejecutar en el computador de la universidad
 
-### Instrumentos y calibraciones
+### Requisitos
 
-- Modelos, repositorios, validadores y lógica de instrumentos y calibraciones.
-- Interfaz de instrumentos con MVVM y conexión a la sección de instrumentos de la aplicación (PR #20 y PR #22).
-- Reglas RN-11/RN-12 contempladas en validaciones y repositorios, con alcance de integración pendiente de comprobación final.
+- Android Studio con Android SDK y un emulador compatible. El entorno comprobado por el equipo fue **Medium Phone API 37**.
+- Java **JDK 21** para el backend y acceso a MySQL en `localhost:3306`.
+- Conectividad para descargar inicialmente dependencias de Gradle y Maven.
+- Puertos libres **8761, 8081, 8082, 8083 y 8084**.
 
-**Alcance y limitaciones:** la interfaz de calibraciones y la aplicación completa de RN-11 al guardado de pruebas eléctricas no se consideran terminadas sin verificación adicional. La operación de galería, cancelaciones y los permisos en todos los recorridos deben comprobarse manualmente en el dispositivo o emulador. No se declara que estén verificadas pruebas no ejecutadas.
+### 1. Preparar el backend
 
-## Uso básico
-
-1. Iniciar sesión con un usuario de los catálogos de prueba del proyecto.
-2. Desde Inicio, ingresar a **Visitas técnicas** para registrar o consultar visitas.
-3. En una nueva visita, seleccionar cliente e instalación, completar la OT y los demás campos obligatorios y guardar.
-4. Regresar al listado y verificar el nuevo registro.
-5. Desde Inicio, abrir **Equipos e instrumentos**; seleccionar cliente e instalación para consultar equipos o registrar uno nuevo.
-6. Expandir una tarjeta de equipo para acceder a cámara o galería y consultar sus fotografías.
-7. Entrar a **Instrumentos** desde la sección correspondiente.
-
-## Instalación y ejecución
-
-**Requisitos:** Android Studio con SDK de Android instalado, un emulador o dispositivo Android compatible y conexión a Internet para la primera descarga de dependencias Gradle.
-
-1. Clonar o descargar el repositorio: `https://github.com/Sebastian-Montupil/Induztek`.
-2. Abrir la carpeta del proyecto **Induztek** en Android Studio.
-3. Esperar la sincronización de Gradle.
-4. Iniciar un emulador Android (se utilizó **Medium Phone API 37.0**) o conectar un dispositivo.
-5. Seleccionar la configuración **app** y pulsar **Run**.
-
-Desde la terminal de Android Studio en Windows (PowerShell), ejecutar:
+Clonar la rama integrada del backend:
 
 ```powershell
-.\gradlew.bat :app:assembleDebug
-.\gradlew.bat :app:testDebugUnitTest
+git clone --branch feature/sebastian-e3-integracion-backend https://github.com/dzzetafps/induztek-microservicios.git
+cd .\induztek-microservicios
+```
+
+Crear en MySQL las tres bases:
+
+```sql
+CREATE DATABASE IF NOT EXISTS induztek_usuarios;
+CREATE DATABASE IF NOT EXISTS induztek_visitas;
+CREATE DATABASE IF NOT EXISTS induztek_equipos;
+```
+
+**Importante:** en `ms-visitas` y `ms-equipos`, las credenciales de MySQL se leen de `DB_USERNAME` y `DB_PASSWORD`; se establecen en **cada terminal** desde la que se ejecuta cada módulo. En `ms-usuarios`, revisar `application.properties`: usa `induztek_app` con contraseña vacía por defecto e importa opcionalmente `application-local.properties`. Configurar un usuario MySQL y la contraseña local de manera segura antes de ejecutar; **no subir secretos a GitHub**. También se necesita una cuenta de demostración existente en la base `induztek_usuarios`; la cuenta creada en el PC de desarrollo no se copia automáticamente.
+
+Abrir **cinco terminales separadas**, cada una situada en la carpeta del módulo correspondiente, y mantenerlas activas:
+
+```powershell
+# Terminal 1 — desde la raíz del backend
+cd .\eureka-server
+.\mvnw.cmd spring-boot:run
+```
+
+```powershell
+# Terminal 2 — desde la raíz del backend
+cd .\api-gateway
+.\mvnw.cmd spring-boot:run
+```
+
+```powershell
+# Terminal 3 — desde la raíz del backend
+cd .\ms-usuarios
+.\mvnw.cmd spring-boot:run
+```
+
+```powershell
+# Terminal 4 — desde la raíz del backend
+cd .\ms-visitas
+$env:DB_USERNAME = "root"  # Adaptar al usuario configurado
+$segura = Read-Host "Clave de MySQL" -AsSecureString
+$env:DB_PASSWORD = [System.Net.NetworkCredential]::new("", $segura).Password
+Remove-Variable segura
+.\mvnw.cmd spring-boot:run
+```
+
+```powershell
+# Terminal 5 — desde la raíz del backend
+cd .\ms-equipos
+$env:DB_USERNAME = "root"  # Adaptar al usuario configurado
+$segura = Read-Host "Clave de MySQL" -AsSecureString
+$env:DB_PASSWORD = [System.Net.NetworkCredential]::new("", $segura).Password
+Remove-Variable segura
+.\mvnw.cmd spring-boot:run
+```
+
+Las variables de entorno se conservan en el proceso de PowerShell mientras la terminal permanezca abierta; la clave no debe mostrarse ni publicarse. Las instrucciones anteriores suponen que cada terminal nueva comienza en la raíz del backend.
+
+Verificar Eureka en `http://localhost:8761/` y comprobar que aparecen `MS-USUARIOS`, `MS-VISITAS` y `MS-EQUIPOS`. Comprobar que el Gateway escucha en `localhost:8081`; una respuesta `401` de un recurso protegido puede significar autenticación faltante y no una caída del servidor.
+
+### 2. Ejecutar Android
+
+```powershell
+git clone --branch feature/integracion-e3-final https://github.com/Sebastian-Montupil/Induztek.git
+cd .\Induztek
+.\gradlew.bat :app:assembleDebug :app:testDebugUnitTest
+```
+
+Abrir el directorio **Induztek** en Android Studio, iniciar el emulador y ejecutar **app** con **Run**.
+
+**Con esta configuración no es necesario utilizar `adb reverse`**: `10.0.2.2` comunica el emulador estándar de Android con el `localhost` del computador anfitrión. El backend y el emulador deben ejecutarse en el **mismo computador** para esta guía. En Android API 37, si se solicita permiso de acceso a la red local, concederlo para que la aplicación pueda contactar al Gateway.
+
+La aplicación inicia con la pantalla de ingreso. Utilizar una cuenta válida configurada en el **MySQL de ese computador**; no utilizar las credenciales de MySQL para iniciar sesión en Android.
+
+### 3. Verificación funcional breve
+
+1. Iniciar sesión y consultar **Mi perfil**.
+2. Registrar una visita con OT no repetida y verificar que aparece en **Visitas técnicas**.
+3. Registrar un equipo con número de serie único y consultar su ficha.
+4. Capturar una foto con cámara y seleccionar otra desde galería. Salir y entrar a la aplicación para comprobar almacenamiento **local**.
+5. Consultar instrumentos y, según el flujo disponible, la sección de calibraciones.
+6. Verificar los datos de la visita/equipo/instrumento desde el Gateway o MySQL.
+7. Consultar el panel de clima; esta operación requiere conexión hacia Open-Meteo.
+
+## Pruebas y cobertura
+
+Ejecutar desde la raíz del proyecto Android:
+
+```powershell
+.\gradlew.bat :app:testDebugUnitTest :app:createDebugUnitTestCoverageReport
+```
+
+Reporte HTML:
+
+```text
+app/build/reports/coverage/test/debug/index.html
+```
+
+También existe una tarea JaCoCo personalizada `jacocoTestReport` configurada en `app/build.gradle.kts`. Para comprobar pruebas instrumentadas, utilizar un emulador iniciado:
+
+```powershell
 .\gradlew.bat :app:connectedDebugAndroidTest
 ```
 
-La última tarea requiere un emulador iniciado o un dispositivo conectado.
+**Estado de verificación al 23 de noviembre de 2026:** se informó `BUILD SUCCESSFUL` para compilación Android, pruebas unitarias completas y generación del informe de cobertura. La última ampliación incluyó ocho pruebas de API simulada de `VisitaRepositoryRemotoTest.kt` (commit `df987eb`).
 
-## Verificación realizada
+La última captura de cobertura global anterior a esa ampliación indicó **19 % de instrucciones**, mientras varios paquetes de lógica presentaron cobertura notablemente mayor (por ejemplo, `com.example.induztek.viewmodel`, 83 %). **No corresponde afirmar que Android completo alcanzó 80 % de cobertura global.** El porcentaje actualizado deberá obtenerse del informe generado sobre la versión final.
 
-- Compilación de la aplicación Android (`assembleDebug`) informada con **BUILD SUCCESSFUL**.
-- Pruebas unitarias y pruebas instrumentadas ejecutadas durante el desarrollo.
-- Después de integrar PR #20 se observó **BUILD SUCCESSFUL** en `master` con las tareas de compilación y pruebas Gradle.
-- Prueba manual de visitas: permanecen registradas al cerrar y abrir nuevamente la app.
-- Prueba manual de equipos: aparecen tras reiniciar al volver a seleccionar cliente e instalación.
-- Prueba manual de fotografía de cámara: la imagen se recupera después de reiniciar la aplicación.
-- Integración visual de instrumentos del PR #22: compilación y **44 pruebas unitarias** comunicadas por el integrante responsable; queda pendiente registrar evidencia de prueba visual y RN-12 completa.
+Las pruebas del backend se ejecutan **por separado**, dentro de cada microservicio Maven; las cifras de cobertura de Android y backend no son intercambiables.
 
-## Evidencias sugeridas para la evaluación
+## APK de entrega
 
-Capturas del ingreso, formulario y listado de visitas, persistencia después de reinicio, registro y consulta de equipos, fotografía almacenada, pantalla de instrumentos, terminal con `BUILD SUCCESSFUL`, historial de Pull Requests y tablero Trello. Las evidencias deben corresponder a funcionalidades probadas realmente.
+Se generó un **APK release firmado**, con clave almacenada por el equipo fuera del repositorio. El APK fue instalado y probado en emulador tras corregir un problema inicial de optimización de la variante release.
 
-## Desarrollo colaborativo
+Para volver a generar el APK firmado: en Android Studio, seleccionar **Build > Generate Signed App Bundle or APK**, elegir **APK**, seleccionar el keystore propio y la variante **release**. No incluir `.jks`, claves privadas ni contraseñas en GitHub. Guardar el APK resultante en el directorio de entrega.
 
-Se utilizaron ramas de trabajo separadas para implementar y revisar funcionalidades, con Pull Requests y revisión cruzada. Entre los PR integrados se encuentran:
+> El directorio `app/release/` no es código fuente y se mantiene fuera del control de versiones. El APK firmado depende del backend accesible para funcionar con datos remotos.
 
-- **#13:** registro y listado de equipos con Room y MVVM.
-- **#14–#16:** persistencia y guardado de visitas en Room.
-- **#17:** cámara, galería, almacenamiento de imágenes y animación de equipos.
-- **#18:** navegación a registro de equipos.
-- **#19:** listado reactivo y permisos de visitas.
-- **#20:** interfaz y MVVM de instrumentos.
-- **#21:** animación de validaciones en visitas.
-- **#22:** conexión de la interfaz de instrumentos.
+## Estructura relevante
 
-Repositorio: https://github.com/Sebastian-Montupil/Induztek
+- `app/src/main/java/com/example/induztek/ui/screens/`: pantallas Compose.
+- `app/src/main/java/com/example/induztek/ui/navigation/`: navegación.
+- `app/src/main/java/com/example/induztek/viewmodel/` y `ui/viewmodel/`: ViewModels.
+- `app/src/main/java/com/example/induztek/data/local/`: Room, DAOs y entidades.
+- `app/src/main/java/com/example/induztek/data/repository/`: repositorios.
+- `app/src/main/java/com/example/induztek/data/remote/`: fuentes de datos de APIs.
+- `app/src/main/java/com/example/induztek/network/`: Retrofit, autenticación y sesión HTTP.
+- `app/src/main/java/com/example/induztek/domain/validation/`: reglas de validación.
+- `app/src/test/`: pruebas unitarias locales y remotas simuladas.
 
-Planificación: tablero **Induztek Terreno — EQ073** en Trello (https://trello.com/b/cikJWwM5/induztek-terreno-eq073).
+## Seguridad y límites de la demostración
+
+El Gateway local utiliza **HTTP** (`10.0.2.2:8081`) y la aplicación permite tráfico sin cifrar para ese escenario académico. Esto **no equivale a una configuración de producción segura**. Para exponer el servicio en Internet o distribuirlo a teléfonos reales se necesita un servidor accesible, HTTPS, control de secretos y revisión de seguridad de autenticación/autorización. Los registros de pruebas y fotografías deben utilizar datos ficticios y respetar la privacidad.
+
+## Coordinación de entrega
+
+Conservar el código fuente de **ambos repositorios**, informes de pruebas, documentación de configuración, APK firmado y evidencias verificadas. No fusionar las ramas integradas a `master`/`main` salvo decisión del equipo. Los archivos con credenciales deben permanecer fuera de los repositorios públicos.
