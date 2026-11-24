@@ -17,3 +17,8 @@ local.properties
 .kotlin/
 .idea/
 **/build/
+
+# Artefactos de firma: mantener fuera de Git
+app/release/
+*.jks
+*.keystore
